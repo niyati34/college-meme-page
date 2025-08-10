@@ -1,14 +1,8 @@
 {
   "version": 2,
-  "functions": {
-    "api/server.js": {
-      "runtime": "@vercel/node@latest"
-    }
-  },
   "routes": [
-  { "src": "/api/(.*)", "dest": "/api/server.js" },
-  { "src": "^/$", "dest": "/build/index.html" },
-  { "src": "^(?!/api)(.*)", "dest": "/build/$1" }
-  ],
-  "buildCommand": "npm run build"
+    { "src": "/api/(.*)", "dest": "/api/server.js" },
+    { "src": "^/$", "dest": "/build/index.html" },
+    { "src": "^(?!/api)(.*)", "dest": "/build/$1" }
+  ]
 }
