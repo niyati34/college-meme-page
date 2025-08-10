@@ -3,8 +3,8 @@ import axios from "axios";
 const API = axios.create({
   baseURL:
     process.env.NODE_ENV === "production"
-      ? "" // In production, use relative URLs since both frontend and backend are on same domain
-      : "http://localhost:5000", // Development
+      ? process.env.NEXT_PUBLIC_API_URL || "" // allow override via env, else relative same domain
+      : process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000", // Development
 });
 
 export const fetchMemes = () => API.get("/api/memes");
