@@ -1,0 +1,50 @@
+import axios from "axios";
+
+const API = axios.create({
+  baseURL: process.env.NODE_ENV === 'production' 
+    ? "" // In production, use relative URLs since both frontend and backend are on same domain
+    : "http://localhost:5000", // Development
+});
+
+export const fetchMemes = () => API.get("/api/memes");
+export const fetchMeme = (id) => API.get(`/api/memes/${id}`);
+export const deleteMeme = (id, token) =>
+  API.delete(`/api/memes/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+export const likeMeme = (id, token) =>
+  API.post(
+    `/api/memes/like/${id}`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+export const viewMeme = (id) => API.post(`/api/memes/view/${id}`);
+export const getComments = (memeId, token = null) => {
+  const config = token
+    ? {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    : {};
+  return API.get(`/api/comments/${memeId}`, config);
+};
+export const postComment = (memeId, text, token) =>
+  API.post(
+    `/api/comments/${memeId}`,
+    { text },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+export const deleteComment = (commentId, token) =>
+  API.delete(`/api/comments/${commentId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+export const register = (email, password, username) =>
+  API.post("/api/auth/register", { email, password, username });
+export const login = (email, password) =>
+  API.post("/api/auth/login", { email, password });
+export const uploadMeme = (formData, token) =>
+  API.post("/api/memes/upload", formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });

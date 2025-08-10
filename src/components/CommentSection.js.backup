@@ -1,0 +1,574 @@
+import { useState, useEffect, useCallback } from "react";
+import { getComments, postComment, deleteComment } from "../api";
+import { Link } from "react-router-dom";
+
+export default function CommentSection({ memeId, user }) {
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  const fetchComments = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { data } = await getComments(memeId);
+      setComments(data || []);
+    } catch (err) {
+      console.error("Error fetching comments:", err);
+      setComments([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [memeId]);
+
+  useEffect(() => {
+    if (memeId) {
+      fetchComments();
+    }
+  }, [memeId, fetchComments]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim() || submitting) return;
+
+    setSubmitting(true);
+    try {
+      const { data } = await postComment(memeId, newComment.trim(), user.token);
+      setComments([data, ...comments]);
+      setNewComment("");
+    } catch (err) {
+      console.error("Error posting comment:", err);
+      alert("Failed to post comment. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (commentId) => {
+    if (!window.confirm("Delete this comment?")) return;
+
+    try {
+      await deleteComment(commentId, user.token);
+      setComments(comments.filter((c) => c._id !== commentId));
+    } catch (err) {
+      console.error("Error deleting comment:", err);
+      alert("Failed to delete comment. Please try again.");
+    }
+  };
+
+  const formatTimeAgo = (date) => {
+    const now = new Date();
+    const past = new Date(date);
+    const diffInMinutes = Math.floor((now - past) / 60000);
+
+    if (diffInMinutes < 1) return "now";
+    if (diffInMinutes < 60) return `${diffInMinutes}m`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h`;
+    if (diffInMinutes < 10080) return `${Math.floor(diffInMinutes / 1440)}d`;
+    return `${Math.floor(diffInMinutes / 10080)}w`;
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white p-4">
+        <div className="animate-pulse space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex space-x-3">
+              <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white">
+      {/* Comments List */}
+      <div className="max-h-96 overflow-y-auto">
+        {comments.length === 0 ? (
+          <div className="p-4 text-center">
+            <p className="text-gray-500 text-sm">No comments yet.</p>
+            <p className="text-gray-400 text-xs mt-1">Be the first to comment!</p>
+          </div>
+        ) : (
+          <div className="p-4 space-y-4">
+            {comments.map((comment) => (
+              <div key={comment._id} className="flex space-x-3">
+                <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                  <img
+                    src={
+                      comment.author?.avatarUrl ||
+                      `https://ui-avatars.com/api/?name=${
+                        comment.author?.username || "A"
+                      }&background=f3f4f6&color=6b7280&size=32`
+                    }
+                    alt={comment.author?.username || "Anonymous"}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm">
+                    <span className="font-semibold text-black mr-2">
+                      {comment.author?.username || "Anonymous"}
+                    </span>
+                    <span className="text-black">{comment.text}</span>
+                  </div>
+                  <div className="flex items-center space-x-4 mt-1">
+                    <span className="text-xs text-gray-500">
+                      {formatTimeAgo(comment.createdAt)}
+                    </span>
+                    <button className="text-xs text-gray-500 font-semibold hover:text-gray-700">
+                      Reply
+                    </button>
+                    {(user?._id === comment.author?._id || user?.role === "admin") && (
+                      <button
+                        onClick={() => handleDelete(comment._id)}
+                        className="text-xs text-red-500 hover:text-red-700"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Comment Input */}
+      {user ? (
+        <div className="border-t border-gray-200 p-4">
+          <form onSubmit={handleSubmit} className="flex space-x-3">
+            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+              <img
+                src={
+                  user.avatarUrl ||
+                  `https://ui-avatars.com/api/?name=${
+                    user.username || "U"
+                  }&background=f3f4f6&color=6b7280&size=32`
+                }
+                alt={user.username || "User"}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex-1 flex space-x-3">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Add a comment..."
+                className="flex-1 border-none outline-none text-sm bg-transparent placeholder-gray-500"
+                maxLength="500"
+              />
+              <button
+                type="submit"
+                disabled={submitting || !newComment.trim()}
+                className={`text-sm font-semibold ${
+                  submitting || !newComment.trim()
+                    ? "text-blue-300 cursor-not-allowed"
+                    : "text-blue-500 hover:text-blue-700"
+                }`}
+              >
+                {submitting ? "Posting..." : "Post"}
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : (
+        <div className="border-t border-gray-200 p-4 text-center">
+          <p className="text-sm text-gray-500 mb-2">
+            <Link to="/login" className="text-blue-500 hover:underline">
+              Log in
+            </Link>{" "}
+            to like or comment.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+        setTimeout(() => document.body.removeChild(successMsg), 300);
+      }, 2000);
+    } catch (err) {
+      console.error("Error posting comment:", err);
+      alert("Failed to post comment. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!user || user.role !== "admin") {
+      alert("Admin access required!");
+      return;
+    }
+
+    if (!window.confirm("Are you sure you want to delete this comment?")) {
+      return;
+    }
+
+    try {
+      await deleteComment(commentId, user.token);
+      setComments(comments.filter((comment) => comment._id !== commentId));
+
+      // Show success message
+      const successMsg = document.createElement("div");
+      successMsg.className =
+        "fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300";
+      successMsg.textContent = "Comment deleted successfully!";
+      document.body.appendChild(successMsg);
+      setTimeout(() => {
+        successMsg.classList.add("opacity-0", "translate-x-full");
+        setTimeout(() => document.body.removeChild(successMsg), 300);
+      }, 2000);
+    } catch (err) {
+      console.error("Error deleting comment:", err);
+      alert("Failed to delete comment. Please try again.");
+    }
+  };
+
+  const formatTimeAgo = (date) => {
+    const now = new Date();
+    const past = new Date(date);
+    const diffInMinutes = Math.floor((now - past) / 60000);
+
+    if (diffInMinutes < 1) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-[300px] bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative mb-4 flex items-center justify-center">
+            <div className="w-12 h-12 border-4 border-blue-200 rounded-full animate-spin"></div>
+            <div className="absolute w-12 h-12 border-4 border-blue-500 rounded-full animate-spin border-t-transparent"></div>
+          </div>
+          <p className="text-gray-500 text-sm">Loading comments...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white">
+      {/* Header */}
+      <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-bold text-gray-900 flex items-center">
+            <svg
+              className="w-6 h-6 mr-3 text-blue-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.959 8.959 0 01-2.84-.456l-3.736 1.247a1 1 0 01-1.264-1.264l1.247-3.736A8.959 8.959 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z"
+              />
+            </svg>
+            Comments
+          </h3>
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-gray-600 bg-white/70 px-3 py-1 rounded-full border">
+              {comments.length} {comments.length === 1 ? "comment" : "comments"}
+            </span>
+            {user?.role === "admin" && (
+              <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full font-semibold">
+                Admin View
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Comment Input */}
+      {user ? (
+        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-white to-gray-50">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="flex items-start space-x-4">
+              <div className="relative flex-shrink-0">
+                <img
+                  src={
+                    user.avatarUrl ||
+                    `https://ui-avatars.com/api/?name=${
+                      user.username || "U"
+                    }&background=667eea&color=fff&size=128`
+                  }
+                  alt={user.username || "User"}
+                  className="w-12 h-12 rounded-full object-cover ring-2 ring-blue-100 shadow-md"
+                />
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+              </div>
+              <div className="flex-1">
+                <div className="mb-2">
+                  <span className="text-sm font-semibold text-gray-700">
+                    {user.username || user.email}
+                    {user.role === "admin" && (
+                      <span className="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                        Admin
+                      </span>
+                    )}
+                  </span>
+                </div>
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Share your thoughts... Be nice! 😊"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl resize-none focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-white placeholder-gray-500 text-gray-800 transition-all duration-200"
+                  rows="3"
+                  maxLength="500"
+                />
+                <div className="flex items-center justify-between mt-3">
+                  <div className="flex items-center space-x-4">
+                    <span
+                      className={`text-xs ${
+                        newComment.length > 450
+                          ? "text-red-500"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      {newComment.length}/500 characters
+                    </span>
+                    <div className="flex items-center space-x-2 text-xs text-gray-500">
+                      <span>💡 Tip: Be respectful and constructive</span>
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submitting || !newComment.trim()}
+                    className={`px-6 py-2 rounded-full font-semibold text-white transition-all duration-200 transform ${
+                      submitting || !newComment.trim()
+                        ? "bg-gray-300 cursor-not-allowed"
+                        : "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
+                    }`}
+                  >
+                    {submitting ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                        <span>Posting...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <span>Post Comment</span>
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                          />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      ) : (
+        <div className="p-6 border-b border-gray-100 text-center bg-gradient-to-r from-gray-50 to-blue-50">
+          <div className="max-w-md mx-auto">
+            <div className="text-6xl mb-4">💬</div>
+            <h4 className="text-lg font-semibold text-gray-800 mb-2">
+              Join the Conversation!
+            </h4>
+            <p className="text-gray-600 mb-6">
+              Login to share your thoughts and connect with the community.
+            </p>
+            <div className="flex justify-center space-x-3">
+              <Link
+                to="/login"
+                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-full hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 transform hover:-translate-y-1 hover:shadow-lg"
+              >
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                  />
+                </svg>
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="inline-flex items-center px-6 py-3 bg-white text-blue-600 font-semibold rounded-full hover:bg-blue-50 transition-all duration-200 transform hover:-translate-y-1 hover:shadow-lg border border-blue-200"
+              >
+                Sign Up
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Comments List */}
+      <div className="p-6">
+        <div className="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar">
+          {comments.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-8xl mb-6">💭</div>
+              <h4 className="text-xl font-semibold text-gray-800 mb-2">
+                No comments yet
+              </h4>
+              <p className="text-gray-600 text-lg">
+                Be the first to share your thoughts!
+              </p>
+            </div>
+          ) : (
+            comments.map((comment, index) => (
+              <div
+                key={comment._id}
+                className="group relative bg-gradient-to-r from-white to-gray-50 rounded-2xl p-4 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
+                style={{
+                  animationDelay: `${index * 100}ms`,
+                  animation: "slideInLeft 0.5s ease-out forwards",
+                }}
+              >
+                <div className="flex items-start space-x-3">
+                  <div className="relative flex-shrink-0">
+                    <img
+                      src={
+                        comment.author?.avatarUrl ||
+                        `https://ui-avatars.com/api/?name=${
+                          comment.author?.username || "A"
+                        }&background=667eea&color=fff&size=128`
+                      }
+                      alt={comment.author?.username || "Anonymous"}
+                      className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm"
+                    />
+                    {user?.role === "admin" &&
+                      comment.author?.role === "admin" && (
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M9.504 1.132a1 1 0 01.992 0l1.75 1a1 1 0 11-.992 1.736L10 3.152l-1.254.716a1 1 0 11-.992-1.736l1.75-1zM5.618 4.504a1 1 0 01-.372 1.364L5.016 6l.23.132a1 1 0 11-.992 1.736L3 7.723V8a1 1 0 01-2 0V6a.996.996 0 01.52-.878l1.734-.99a1 1 0 011.364.372zm8.764 0a1 1 0 011.364-.372l1.734.99A.996.996 0 0118 6v2a1 1 0 11-2 0v-.277l-1.254.145a1 1 0 11-.992-1.736L14.984 6l-.23-.132a1 1 0 01-.372-1.364zm-7 4a1 1 0 011.364-.372L10 8.848l1.254-.716a1 1 0 11.992 1.736L11 10.723V12a1 1 0 11-2 0v-1.277l-1.246-.855a1 1 0 01-.372-1.364zM3 11a1 1 0 011 1v1.277l1.246.855a1 1 0 11-.992 1.736l-1.75-1A.996.996 0 012 14v-2a1 1 0 011-1zm14 0a1 1 0 011 1v2a.996.996 0 01-.504.868l-1.75 1a1 1 0 11-.992-1.736L16 13.277V12a1 1 0 011-1zm-9.618 5.504a1 1 0 011.364.372l.254.145V16a1 1 0 112 0v1.021l.254-.145a1 1 0 11.992 1.736l-1.735.992a.995.995 0 01-1.022 0l-1.735-.992a1 1 0 01.128-1.735z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-semibold text-gray-900 text-sm">
+                          {comment.author?.username || "Anonymous"}
+                          {user?.role === "admin" &&
+                            comment.author?.role === "admin" && (
+                              <span className="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                                Admin
+                              </span>
+                            )}
+                        </span>
+                        {user?.role === "admin" && comment.author?.email && (
+                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                            {comment.author.email}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs text-gray-500 flex items-center">
+                          <svg
+                            className="w-3 h-3 mr-1"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          {formatTimeAgo(comment.createdAt)}
+                        </span>
+                        {user?.role === "admin" && (
+                          <button
+                            onClick={() => handleDeleteComment(comment._id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full hover:bg-red-100 text-red-600 hover:text-red-700"
+                            title="Delete comment"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-gray-800 text-sm leading-relaxed break-words">
+                      {comment.text}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes slideInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(45deg, #3b82f6, #6366f1);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(45deg, #2563eb, #4f46e5);
+        }
+      `}</style>
+    </div>
+  );
+}

@@ -1,0 +1,180 @@
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AiOutlineHeart, AiFillHeart } from "react-icons/ai";
+import { FaRegComment, FaShare, FaTimes } from "react-icons/fa";
+import { likeMeme } from "../api";
+
+export default function MemeCard({ meme, user, onVideoPlay, playingVideoId }) {
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(meme.likes?.length || 0);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [showLikeAnimation, setShowLikeAnimation] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user && meme.likes) {
+      const hasLiked = meme.likes.some((id) => String(id) === String(user._id));
+      setIsLiked(hasLiked);
+    }
+  }, [meme.likes, user]);
+
+  const handleLike = async (e) => {
+    e.stopPropagation(); // Prevent navigation when clicking like
+
+    if (!user) {
+      alert("Please login to like memes!");
+      return;
+    }
+
+    // Optimistic update
+    setIsLiked(!isLiked);
+    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+
+    // Show animation for new likes
+    if (!isLiked) {
+      setShowLikeAnimation(true);
+      setTimeout(() => setShowLikeAnimation(false), 1000);
+    }
+
+    try {
+      const { data } = await likeMeme(meme._id, user.token);
+      setLikeCount(data.likes?.length || 0);
+    } catch (err) {
+      // Revert optimistic update on error
+      setIsLiked(isLiked);
+      setLikeCount(isLiked ? likeCount + 1 : likeCount - 1);
+      console.error("Error liking meme:", err);
+      alert("Failed to like meme. Please try again.");
+    }
+  };
+
+  const handleShare = async (e) => {
+    e.stopPropagation(); // Prevent navigation when clicking share
+
+    try {
+      const shareData = {
+        title: "Check out this hilarious meme!",
+        text: meme.title || "Funny meme from MemeVerse",
+        url: `${window.location.origin}/meme/${meme._id}`,
+      };
+
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareData.url);
+        // Show a nice notification instead of alert
+        const notification = document.createElement("div");
+        notification.className = "notification";
+        notification.textContent = "Link copied to clipboard!";
+        document.body.appendChild(notification);
+        setTimeout(() => document.body.removeChild(notification), 3000);
+      }
+    } catch (err) {
+      console.error("Error sharing:", err);
+    }
+  };
+
+  const handleCommentClick = (e) => {
+    e.stopPropagation(); // Prevent navigation when clicking comment
+
+    if (!user) {
+      alert("Please login to comment!");
+      return;
+    }
+    navigate(`/meme/${meme._id}`);
+  };
+
+  const handleCardClick = () => {
+    navigate(`/meme/${meme._id}`);
+  };
+
+  const handleImageLoad = () => setImageLoaded(true);
+
+  const formatTimeAgo = (date) => {
+    const now = new Date();
+    const past = new Date(date);
+    const diffInMinutes = Math.floor((now - past) / 60000);
+
+    if (diffInMinutes < 1) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
+  };
+
+  return (
+    <article className="meme-card">
+      {/* Card Header */}
+      <div className="meme-header">
+        <div className="user-info">
+          <div className="avatar">
+            <img
+              src={
+                meme.author?.avatarUrl ||
+                `https://ui-avatars.com/api/?name=${
+                  meme.author?.username || "A"
+                }&background=667eea&color=fff&size=128`
+              }
+              alt={meme.author?.username || "Anonymous"}
+              className="avatar-img"
+            />
+          </div>
+          <div className="user-details">
+            <h3 className="username">
+              {meme.author?.username || "Anonymous"}
+            </h3>
+            <div className="timestamp">
+              {meme.createdAt ? formatTimeAgo(meme.createdAt) : "Just now"}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Media Container */}
+      <div className="media-container" onClick={handleCardClick}>
+        <div className="media-wrapper">
+          {!imageLoaded && (
+            <div className="loading-placeholder">
+              <div className="loading-animation"></div>
+            </div>
+          )}
+          <img
+            src={meme.mediaUrl}
+            alt={meme.title || "Meme"}
+            onLoad={handleImageLoad}
+            className={imageLoaded ? "loaded" : "loading"}
+          />
+        </div>
+      </div>
+
+      {/* Card Content */}
+      <div className="meme-content">
+        <h2 className="meme-title">{meme.title}</h2>
+        {meme.caption && <p className="meme-caption">{meme.caption}</p>}
+      </div>
+
+      {/* Card Footer */}
+      <div className="meme-footer">
+        <div className="action-buttons">
+          <button onClick={handleLike} className="action-button">
+            {isLiked ? (
+              <AiFillHeart className="icon liked" />
+            ) : (
+              <AiOutlineHeart className="icon" />
+            )}
+            <span>{likeCount}</span>
+          </button>
+          
+          <button onClick={handleCommentClick} className="action-button">
+            <FaRegComment className="icon" />
+            <span>{meme.comments?.length || 0}</span>
+          </button>
+          
+          <button onClick={handleShare} className="action-button">
+            <FaShare className="icon" />
+            <span>Share</span>
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}

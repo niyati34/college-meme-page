@@ -1,0 +1,61 @@
+import { useEffect, useState } from "react";
+import { fetchMemes } from "../api";
+import MemeCard from "../components/MemeCard";
+
+function Home({ user }) {
+  const [memes, setMemes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [playingVideoId, setPlayingVideoId] = useState(null);
+
+  const handleVideoPlay = (memeId) => {
+    setPlayingVideoId(memeId);
+  };
+
+  useEffect(() => {
+    const fetchAllMemes = async () => {
+      try {
+        const { data } = await fetchMemes();
+        setMemes(data);
+      } catch (err) {
+        console.error("Error fetching memes:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllMemes();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-xl">Loading memes...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen py-8">
+      <h1 className="text-3xl font-bold text-center mb-8">
+        College Meme Page
+      </h1>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {memes.length === 0 ? (
+          <p className="col-span-full text-center">No memes available</p>
+        ) : (
+          memes.map((meme) => (
+            <MemeCard
+              key={meme._id}
+              meme={meme}
+              user={user}
+              onVideoPlay={handleVideoPlay}
+              playingVideoId={playingVideoId}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default Home;
