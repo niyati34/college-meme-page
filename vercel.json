@@ -3,10 +3,14 @@
   "builds": [
     {
       "src": "package.json",
-      "use": "@vercel/node",
+      "use": "@vercel/static-build",
       "config": {
-        "includeFiles": ["build/**"]
+        "distDir": "build"
       }
+    },
+    {
+      "src": "server/server.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -18,10 +22,5 @@
       "src": "/(.*)",
       "dest": "/build/$1"
     }
-  ],
-  "functions": {
-    "server/server.js": {
-      "includeFiles": "build/**"
-    }
-  }
+  ]
 }
