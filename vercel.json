@@ -2,7 +2,8 @@
   "version": 2,
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/server.js" },
-    { "src": "^/$", "dest": "/build/index.html" },
-    { "src": "^(?!/api)(.*)", "dest": "/build/$1" }
+    { "src": "/static/(.*)", "dest": "/static/$1" },
+    { "src": "/(.*\\.(js|css|png|jpg|ico|svg))", "dest": "/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
