@@ -6,6 +6,8 @@ const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const memeRoutes = require("./routes/memeRoutes");
 const commentRoutes = require("./routes/commentRoutes");
+const collectionRoutes = require("./routes/collectionRoutes");
+const userRoutes = require("./routes/userRoutes");
 const fixUsers = require("./fixUsers");
 
 const app = express();
@@ -16,6 +18,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/memes", memeRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/collections", collectionRoutes);
+app.use("/api/users", userRoutes);
 
 // Mongoose connection cache to speed up serverless cold starts
 let cached = global.mongoose;
@@ -27,10 +31,7 @@ async function connectToDatabase() {
   if (cached.conn) return cached.conn;
   if (!cached.promise) {
     cached.promise = mongoose
-      .connect(process.env.MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      })
+      .connect(process.env.MONGO_URI)
       .then((m) => m);
   }
   cached.conn = await cached.promise;

@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Upload from "./pages/Upload";
 import Saved from "./pages/Saved";
+import Profile from "./pages/Profile";
 import Header from "./components/Header";
 import "./styles/custom.css";
 
@@ -50,6 +51,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/upload" element={<Upload user={user} />} />
           <Route path="/saved" element={<Saved user={user} />} />
+          <Route path="/profile/:username" element={<Profile user={user} />} />
         </Routes>
       </div>
     </BrowserRouter>

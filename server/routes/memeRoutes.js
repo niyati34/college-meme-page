@@ -8,6 +8,9 @@ const {
   deleteMeme,
   toggleLike,
   incrementViews,
+  getTrendingMemes,
+  getMemesByCategory,
+  searchMemes
 } = require("../controllers/memeController");
 
 const { verifyUser, verifyAdmin } = require("../middlewares/authMiddleware");
@@ -15,12 +18,15 @@ const upload = require("../middlewares/multer");
 
 // Public routes
 router.get("/", getAllMemes);
-router.get("/:id", getMeme); // Add route for getting single meme
+router.get("/trending", getTrendingMemes);
+router.get("/category/:category", getMemesByCategory);
+router.get("/search", searchMemes);
+router.get("/:id", getMeme);
 router.post("/view/:id", incrementViews);
 
 // Protected routes
 router.post("/like/:id", verifyUser, toggleLike);
-router.delete("/:id", verifyUser, verifyAdmin, deleteMeme); // Admin can delete memes
+router.delete("/:id", verifyUser, verifyAdmin, deleteMeme);
 
 // Admin upload
 router.post(
@@ -30,4 +36,5 @@ router.post(
   upload.single("media"),
   createMeme
 );
+
 module.exports = router;
