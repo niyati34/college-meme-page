@@ -1,17 +1,76 @@
 const Meme = require("../models/Meme");
 const Comment = require("../models/Comment");
+const Collection = require("../models/Collection");
 const mongoose = require("mongoose");
 
 exports.getAllMemes = async (req, res) => {
   try {
-    const memes = await Meme.find()
-      .populate("author", "username avatarUrl")
-      .sort({ createdAt: -1 });
+    const { 
+      page = 1, 
+      limit = 20, 
+      category, 
+      sortBy = "newest",
+      search,
+      tags
+    } = req.query;
 
-    // Get comment counts for each meme
-    const memesWithComments = await Promise.all(
+    const skip = (page - 1) * limit;
+    
+    // Build filter object
+    let filter = { status: "active" };
+    
+    if (category) {
+      filter.categories = category;
+    }
+    
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { tags: { $in: [new RegExp(search, "i")] } }
+      ];
+    }
+    
+    if (tags) {
+      const tagArray = tags.split(",");
+      filter.tags = { $in: tagArray };
+    }
+
+    // Build sort object
+    let sort = {};
+    switch (sortBy) {
+      case "trending":
+        sort = { trendingScore: -1, createdAt: -1 };
+        break;
+      case "popular":
+        sort = { likes: -1, views: -1 };
+        break;
+      case "mostViewed":
+        sort = { views: -1 };
+        break;
+      case "oldest":
+        sort = { createdAt: 1 };
+        break;
+      default: // newest
+        sort = { createdAt: -1 };
+    }
+
+    const memes = await Meme.find(filter)
+      .populate("author", "username avatarUrl profile.displayName")
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    // Get comment counts and calculate trending scores
+    const memesWithStats = await Promise.all(
       memes.map(async (meme) => {
         const commentCount = await Comment.countDocuments({ memeId: meme._id });
+        
+        // Update trending score if not set
+        if (!meme.trendingScore) {
+          meme.calculateTrendingScore();
+          await meme.save();
+        }
+
         return {
           _id: meme._id,
           title: meme.title || "",
@@ -19,7 +78,13 @@ exports.getAllMemes = async (req, res) => {
           mediaType: meme.mediaType || "image",
           author: meme.author || { username: "Anonymous", avatarUrl: null },
           likes: meme.likes || [],
+          dislikes: meme.dislikes || [],
           views: meme.views || 0,
+          shares: meme.shares || 0,
+          categories: meme.categories || [],
+          tags: meme.tags || [],
+          trendingScore: meme.trendingScore || 0,
+          aspectRatio: meme.aspectRatio || "normal",
           createdAt: meme.createdAt,
           updatedAt: meme.updatedAt,
           comments: { length: commentCount },
@@ -27,9 +92,117 @@ exports.getAllMemes = async (req, res) => {
       })
     );
 
-    res.status(200).json(memesWithComments);
+    // Get total count for pagination
+    const total = await Meme.countDocuments(filter);
+
+    res.status(200).json({
+      memes: memesWithStats,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalMemes: total,
+        hasNext: page * limit < total,
+        hasPrev: page > 1
+      }
+    });
   } catch (err) {
     console.error("Error fetching all memes:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+// Get trending memes
+exports.getTrendingMemes = async (req, res) => {
+  try {
+    const { limit = 10 } = req.query;
+    
+    const trendingMemes = await Meme.find({ status: "active" })
+      .populate("author", "username avatarUrl profile.displayName")
+      .sort({ trendingScore: -1, createdAt: -1 })
+      .limit(parseInt(limit));
+
+    res.status(200).json(trendingMemes);
+  } catch (err) {
+    console.error("Error fetching trending memes:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+// Get memes by category
+exports.getMemesByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const { page = 1, limit = 20 } = req.query;
+    
+    const skip = (page - 1) * limit;
+    
+    const memes = await Meme.find({ 
+      categories: category, 
+      status: "active" 
+    })
+      .populate("author", "username avatarUrl profile.displayName")
+      .sort({ trendingScore: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Meme.countDocuments({ 
+      categories: category, 
+      status: "active" 
+    });
+
+    res.status(200).json({
+      memes,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalMemes: total
+      }
+    });
+  } catch (err) {
+    console.error("Error fetching memes by category:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+// Search memes
+exports.searchMemes = async (req, res) => {
+  try {
+    const { q, page = 1, limit = 20 } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+
+    const skip = (page - 1) * limit;
+    
+    const searchFilter = {
+      status: "active",
+      $or: [
+        { title: { $regex: q, $options: "i" } },
+        { tags: { $in: [new RegExp(q, "i")] } },
+        { categories: { $in: [new RegExp(q, "i")] } }
+      ]
+    };
+
+    const memes = await Meme.find(searchFilter)
+      .populate("author", "username avatarUrl profile.displayName")
+      .sort({ trendingScore: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Meme.countDocuments(searchFilter);
+
+    res.status(200).json({
+      memes,
+      query: q,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalResults: total
+      }
+    });
+  } catch (err) {
+    console.error("Error searching memes:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };

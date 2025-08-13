@@ -15,7 +15,7 @@ const memeSchema = new mongoose.Schema(
     aspectRatio: {
       type: String,
       enum: ["normal", "reel"],
-      default: "normal"
+      default: "normal",
     },
   },
   { timestamps: true }
