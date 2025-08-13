@@ -12,6 +12,11 @@ const memeSchema = new mongoose.Schema(
     author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     likes: [{ type: mongoose.Types.ObjectId, ref: "User" }],
     views: { type: Number, default: 0 },
+    aspectRatio: {
+      type: String,
+      enum: ["normal", "reel"],
+      default: "normal"
+    },
   },
   { timestamps: true }
 );
