@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { fetchMemes } from "../api";
 import MemeCard from "../components/MemeCard";
-import { FiTrendingUp, FiFilter, FiSearch, FiGrid } from "react-icons/fi";
+import { FiTrendingUp, FiFilter, FiSearch, FiGrid, FiX, FiRefreshCw, FiHeart, FiEye, FiShare2 } from "react-icons/fi";
 
 function Home({ user }) {
   const [memes, setMemes] = useState([]);
@@ -17,42 +17,50 @@ function Home({ user }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [trendingMemes, setTrendingMemes] = useState([]);
+  const [trendingLoading, setTrendingLoading] = useState(true);
   
   const observer = useRef();
   const lastMemeRef = useRef();
 
   const categories = [
-    { id: "", label: "All Categories" },
-    { id: "funny", label: "Funny" },
-    { id: "gaming", label: "Gaming" },
-    { id: "anime", label: "Anime" },
-    { id: "movies", label: "Movies" },
-    { id: "politics", label: "Politics" },
-    { id: "sports", label: "Sports" },
-    { id: "tech", label: "Tech" },
-    { id: "other", label: "Other" }
+    { id: "", label: "All", icon: "🌟" },
+    { id: "funny", label: "Funny", icon: "😂" },
+    { id: "gaming", label: "Gaming", icon: "🎮" },
+    { id: "anime", label: "Anime", icon: "✨" },
+    { id: "movies", label: "Movies", icon: "🎬" },
+    { id: "politics", label: "Politics", icon: "🗳️" },
+    { id: "sports", label: "Sports", icon: "⚽" },
+    { id: "tech", label: "Tech", icon: "💻" },
+    { id: "other", label: "Other", icon: "🎯" }
   ];
 
   const sortOptions = [
-    { value: "newest", label: "Newest" },
-    { value: "trending", label: "Trending" },
-    { value: "popular", label: "Most Popular" },
-    { value: "mostViewed", label: "Most Viewed" },
-    { value: "oldest", label: "Oldest" }
+    { value: "newest", label: "Latest", icon: "🆕" },
+    { value: "trending", label: "Trending", icon: "🔥" },
+    { value: "popular", label: "Popular", icon: "⭐" },
+    { value: "mostViewed", label: "Most Viewed", icon: "👁️" },
+    { value: "oldest", label: "Oldest", icon: "📜" }
   ];
 
   const handleVideoPlay = (memeId) => {
     setPlayingVideoId(memeId);
   };
 
-  // Fetch trending memes
+  // Enhanced trending memes fetch with better error handling
   const fetchTrendingMemes = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/memes/trending?limit=5`);
+      setTrendingLoading(true);
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/memes/trending?limit=6`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
-      setTrendingMemes(data);
+      setTrendingMemes(data || []);
     } catch (err) {
       console.error("Error fetching trending memes:", err);
+      setTrendingMemes([]);
+    } finally {
+      setTrendingLoading(false);
     }
   };
 
@@ -114,6 +122,7 @@ function Home({ user }) {
   // Handle search
   const handleSearch = (e) => {
     e.preventDefault();
+    if (!searchQuery.trim()) return;
     setCurrentPage(1);
     setMemes([]);
     setHasMore(true);
@@ -131,6 +140,15 @@ function Home({ user }) {
     fetchAllMemes(1, true);
   };
 
+  // Clear search
+  const clearSearch = () => {
+    setSearchQuery("");
+    setCurrentPage(1);
+    setMemes([]);
+    setHasMore(true);
+    fetchAllMemes(1, true);
+  };
+
   useEffect(() => {
     fetchAllMemes(1, true);
     fetchTrendingMemes();
@@ -138,44 +156,12 @@ function Home({ user }) {
 
   if (loading && memes.length === 0) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="max-w-lg mx-auto pt-4 sm:pt-8 px-0 sm:px-4">
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={i}
-              className="bg-white border border-gray-200 rounded-none sm:rounded-lg mb-6 overflow-hidden"
-            >
-              <div className="flex items-center p-3 space-x-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full animate-shimmer"></div>
-                <div className="flex-1">
-                  <div className="h-4 w-1/3 rounded-lg animate-shimmer"></div>
-                  <div className="h-3 w-1/5 mt-1 rounded-lg animate-shimmer"></div>
-                </div>
-                <div className="w-6 h-6 rounded-full animate-shimmer"></div>
-              </div>
-
-              <div className="aspect-square animate-shimmer relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 border-2 border-white rounded-xl opacity-30"></div>
-                </div>
-              </div>
-
-              <div className="p-3 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex space-x-4">
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full animate-shimmer"></div>
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full animate-shimmer"></div>
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full animate-shimmer"></div>
-                  </div>
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full animate-shimmer"></div>
-                </div>
-
-                <div className="h-4 w-16 rounded-lg animate-shimmer"></div>
-                <div className="h-4 w-3/4 rounded-lg animate-shimmer"></div>
-                <div className="h-3 w-1/4 rounded-lg animate-shimmer"></div>
-              </div>
-            </div>
-          ))}
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="max-w-4xl mx-auto pt-8 px-4">
+          <div className="text-center mb-8">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            <p className="mt-4 text-gray-600">Loading your meme feed...</p>
+          </div>
         </div>
       </div>
     );
@@ -183,183 +169,291 @@ function Home({ user }) {
 
   if (error && memes.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-500 mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-          >
-            Try Again
-          </button>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="bg-white rounded-2xl p-8 shadow-lg">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FiX className="text-red-500 text-2xl" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Oops! Something went wrong</h3>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full bg-blue-500 text-white py-3 px-6 rounded-xl hover:bg-blue-600 transition-colors font-medium"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Trending Section */}
-      {trendingMemes.length > 0 && (
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-b">
-          <div className="max-w-lg mx-auto px-4 py-4">
-            <div className="flex items-center space-x-2 mb-3">
-              <FiTrendingUp className="text-purple-500 text-xl" />
-              <h2 className="text-lg font-semibold text-gray-800">Trending Now</h2>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Enhanced Trending Section */}
+      <div className="bg-white border-b border-gray-100 shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                <FiTrendingUp className="text-white text-xl" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Trending Now</h2>
+                <p className="text-sm text-gray-500">Most popular memes this week</p>
+              </div>
             </div>
-            <div className="flex space-x-3 overflow-x-auto pb-2">
-              {trendingMemes.map((meme, index) => (
-                <div key={meme._id} className="flex-shrink-0">
-                  <div className="w-24 h-24 rounded-lg overflow-hidden border-2 border-purple-200">
-                    {meme.mediaType === "video" ? (
-                      <video
-                        src={meme.mediaUrl}
-                        className="w-full h-full object-cover"
-                        muted
-                        loop
-                      />
-                    ) : (
-                      <img
-                        src={meme.mediaUrl}
-                        alt={meme.title}
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-600 mt-1 text-center truncate w-24">
-                    {meme.title || "Untitled"}
-                  </p>
+            <button
+              onClick={fetchTrendingMemes}
+              disabled={trendingLoading}
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+              title="Refresh trending"
+            >
+              <FiRefreshCw className={`w-5 h-5 ${trendingLoading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+
+          {trendingLoading ? (
+            <div className="flex space-x-4 overflow-x-auto pb-2">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="flex-shrink-0">
+                  <div className="w-32 h-32 bg-gray-200 rounded-2xl animate-pulse"></div>
+                  <div className="w-32 h-4 bg-gray-200 rounded mt-2 animate-pulse"></div>
                 </div>
               ))}
             </div>
-          </div>
+          ) : trendingMemes.length > 0 ? (
+            <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
+              {trendingMemes.map((meme) => (
+                <div key={meme._id} className="flex-shrink-0 group cursor-pointer">
+                  <div className="relative">
+                    <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+                      {meme.mediaType === "video" ? (
+                        <video
+                          src={meme.mediaUrl}
+                          className="w-full h-full object-cover"
+                          muted
+                          loop
+                        />
+                      ) : (
+                        <img
+                          src={meme.mediaUrl}
+                          alt={meme.title}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-2xl"></div>
+                  </div>
+                  <div className="mt-2 text-center">
+                    <p className="text-sm font-medium text-gray-900 truncate w-32">
+                      {meme.title || "Untitled"}
+                    </p>
+                    <div className="flex items-center justify-center space-x-3 mt-1 text-xs text-gray-500">
+                      <span className="flex items-center space-x-1">
+                        <FiHeart className="w-3 h-3" />
+                        <span>{meme.likes?.length || 0}</span>
+                      </span>
+                      <span className="flex items-center space-x-1">
+                        <FiEye className="w-3 h-3" />
+                        <span>{meme.views || 0}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <FiTrendingUp className="mx-auto text-gray-300 text-4xl mb-3" />
+              <p className="text-gray-500">No trending memes yet</p>
+              <p className="text-sm text-gray-400">Check back later for the latest trends</p>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* Filters and Search */}
-      <div className="sticky top-0 z-10 bg-white border-b shadow-sm">
-        <div className="max-w-lg mx-auto px-4 py-3">
+      {/* Enhanced Filters and Search */}
+      <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 py-4">
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="mb-3">
-            <div className="relative">
-              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <form onSubmit={handleSearch} className="mb-4">
+            <div className="relative max-w-2xl mx-auto">
+              <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
               <input
                 type="text"
-                placeholder="Search memes..."
+                placeholder="Search for memes, tags, or categories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <FiX className="w-5 h-5" />
+                </button>
+              )}
             </div>
           </form>
 
-          {/* Filter Toggle */}
+          {/* Filter Controls */}
           <div className="flex items-center justify-between">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
-            >
-              <FiFilter />
-              <span>Filters</span>
-            </button>
-            
-            <button
-              onClick={resetFilters}
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              Reset
-            </button>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 ${
+                  showFilters 
+                    ? 'bg-blue-500 text-white shadow-lg' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <FiFilter className="w-4 h-4" />
+                <span className="font-medium">Filters</span>
+              </button>
+              
+              {(selectedCategory || searchQuery || sortBy !== "newest") && (
+                <button
+                  onClick={resetFilters}
+                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                >
+                  Clear All
+                </button>
+              )}
+            </div>
+
+            {/* Active Filters Display */}
+            <div className="flex items-center space-x-2">
+              {selectedCategory && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full">
+                  {categories.find(c => c.id === selectedCategory)?.label}
+                </span>
+              )}
+              {sortBy !== "newest" && (
+                <span className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full">
+                  {sortOptions.find(s => s.value === sortBy)?.label}
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* Filter Options */}
+          {/* Enhanced Filter Options */}
           {showFilters && (
-            <div className="mt-3 space-y-3 animate-slideDown">
-              {/* Categories */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {categories.map((category) => (
-                    <button
-                      key={category.id}
-                      onClick={() => handleFilterChange("category", category.id)}
-                      className={`px-3 py-2 text-sm rounded-lg border transition-colors ${
-                        selectedCategory === category.id
-                          ? "bg-blue-500 text-white border-blue-500"
-                          : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
-                      }`}
-                    >
-                      {category.label}
-                    </button>
-                  ))}
+            <div className="mt-4 p-4 bg-gray-50 rounded-2xl animate-slideDown">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Categories */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Categories</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {categories.map((category) => (
+                      <button
+                        key={category.id}
+                        onClick={() => handleFilterChange("category", category.id)}
+                        className={`p-3 rounded-xl border-2 transition-all duration-200 flex flex-col items-center space-y-1 ${
+                          selectedCategory === category.id
+                            ? "bg-blue-500 text-white border-blue-500 shadow-lg scale-105"
+                            : "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-md"
+                        }`}
+                      >
+                        <span className="text-lg">{category.icon}</span>
+                        <span className="text-xs font-medium">{category.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Sort Options */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => handleFilterChange("sort", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {sortOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                {/* Sort Options */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Sort By</label>
+                  <div className="space-y-2">
+                    {sortOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => handleFilterChange("sort", option.value)}
+                        className={`w-full p-3 rounded-xl border-2 transition-all duration-200 flex items-center space-x-3 ${
+                          sortBy === option.value
+                            ? "bg-blue-500 text-white border-blue-500 shadow-lg"
+                            : "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-md"
+                        }`}
+                      >
+                        <span className="text-lg">{option.icon}</span>
+                        <span className="font-medium">{option.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Memes Grid */}
-      <div className="max-w-lg mx-auto px-0 sm:px-4">
+      {/* Enhanced Memes Grid */}
+      <div className="max-w-4xl mx-auto px-4 py-6">
         {memes.length === 0 && !loading ? (
-          <div className="text-center py-12">
-            <FiGrid className="mx-auto text-gray-400 text-4xl mb-4" />
-            <p className="text-gray-500 text-lg">No memes found</p>
-            <p className="text-gray-400 text-sm">Try adjusting your filters or search terms</p>
+          <div className="text-center py-16">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FiGrid className="text-gray-400 text-3xl" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No memes found</h3>
+            <p className="text-gray-600 mb-6">Try adjusting your filters or search terms</p>
+            <button
+              onClick={resetFilters}
+              className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors font-medium"
+            >
+              Reset Filters
+            </button>
           </div>
         ) : (
-          memes.map((meme, index) => {
-            if (memes.length === index + 1) {
-              return (
-                <div key={meme._id} ref={lastMemeElementRef}>
+          <div className="space-y-6">
+            {memes.map((meme, index) => {
+              if (memes.length === index + 1) {
+                return (
+                  <div key={meme._id} ref={lastMemeElementRef}>
+                    <MemeCard
+                      meme={meme}
+                      user={user}
+                      onVideoPlay={handleVideoPlay}
+                      isPlaying={playingVideoId === meme._id}
+                    />
+                  </div>
+                );
+              } else {
+                return (
                   <MemeCard
+                    key={meme._id}
                     meme={meme}
                     user={user}
                     onVideoPlay={handleVideoPlay}
                     isPlaying={playingVideoId === meme._id}
                   />
-                </div>
-              );
-            } else {
-              return (
-                <MemeCard
-                  key={meme._id}
-                  meme={meme}
-                  user={user}
-                  onVideoPlay={handleVideoPlay}
-                  isPlaying={playingVideoId === meme._id}
-                />
-              );
-            }
-          })
-        )}
-
-        {/* Loading indicator for infinite scroll */}
-        {loading && memes.length > 0 && (
-          <div className="text-center py-6">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                );
+              }
+            })}
           </div>
         )}
 
-        {/* End of content */}
+        {/* Enhanced Loading indicator */}
+        {loading && memes.length > 0 && (
+          <div className="text-center py-8">
+            <div className="inline-flex items-center space-x-2">
+              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-gray-600">Loading more memes...</span>
+            </div>
+          </div>
+        )}
+
+        {/* Enhanced End of content */}
         {!hasMore && memes.length > 0 && (
-          <div className="text-center py-6 text-gray-500">
-            <p>You've reached the end! 🎉</p>
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-white text-2xl">🎉</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">You've reached the end!</h3>
+            <p className="text-gray-600">Check back later for fresh memes</p>
           </div>
         )}
       </div>
