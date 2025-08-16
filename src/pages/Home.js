@@ -191,84 +191,158 @@ function Home({ user }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Enhanced Trending Section */}
+      {/* Enhanced Trending Section - User-Friendly Design */}
       <div className="bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between mb-4">
+          {/* Trending Header */}
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                <FiTrendingUp className="text-white text-xl" />
+              <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-red-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <FiTrendingUp className="text-white text-2xl" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Trending Now</h2>
-                <p className="text-sm text-gray-500">Most popular memes this week</p>
+                <h2 className="text-2xl font-bold text-gray-900">Trending Now</h2>
+                <p className="text-gray-600">Discover what's hot this week</p>
               </div>
             </div>
             <button
               onClick={fetchTrendingMemes}
               disabled={trendingLoading}
-              className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
-              title="Refresh trending"
+              className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-all duration-200 disabled:opacity-50"
+              title="Refresh trending memes"
             >
-              <FiRefreshCw className={`w-5 h-5 ${trendingLoading ? 'animate-spin' : ''}`} />
+              <FiRefreshCw className={`w-4 h-4 ${trendingLoading ? 'animate-spin' : ''}`} />
+              <span className="text-sm font-medium">Refresh</span>
             </button>
           </div>
 
+          {/* Trending Content */}
           {trendingLoading ? (
-            <div className="flex space-x-4 overflow-x-auto pb-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="flex-shrink-0">
-                  <div className="w-32 h-32 bg-gray-200 rounded-2xl animate-pulse"></div>
-                  <div className="w-32 h-4 bg-gray-200 rounded mt-2 animate-pulse"></div>
+                <div key={i} className="space-y-3">
+                  <div className="w-full aspect-square bg-gray-200 rounded-2xl animate-pulse"></div>
+                  <div className="space-y-2">
+                    <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-2 bg-gray-200 rounded w-2/3 animate-pulse"></div>
+                  </div>
                 </div>
               ))}
             </div>
           ) : trendingMemes.length > 0 ? (
-            <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
-              {trendingMemes.map((meme) => (
-                <div key={meme._id} className="flex-shrink-0 group cursor-pointer">
-                  <div className="relative">
-                    <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                      {meme.mediaType === "video" ? (
-                        <video
-                          src={meme.mediaUrl}
-                          className="w-full h-full object-cover"
-                          muted
-                          loop
-                        />
-                      ) : (
-                        <img
-                          src={meme.mediaUrl}
-                          alt={meme.title}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
+            <div className="space-y-6">
+              {/* Featured Trending Meme (Larger) */}
+              {trendingMemes[0] && (
+                <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-3xl p-6 border border-orange-100">
+                  <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
+                    <div className="relative group cursor-pointer">
+                      <div className="w-48 h-48 md:w-64 md:h-64 rounded-2xl overflow-hidden shadow-xl group-hover:shadow-2xl transition-all duration-300">
+                        {trendingMemes[0].mediaType === "video" ? (
+                          <video
+                            src={trendingMemes[0].mediaUrl}
+                            className="w-full h-full object-cover"
+                            muted
+                            loop
+                          />
+                        ) : (
+                          <img
+                            src={trendingMemes[0].mediaUrl}
+                            alt={trendingMemes[0].title}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                      <div className="absolute top-3 left-3 bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                        #1 Trending
+                      </div>
                     </div>
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-2xl"></div>
-                  </div>
-                  <div className="mt-2 text-center">
-                    <p className="text-sm font-medium text-gray-900 truncate w-32">
-                      {meme.title || "Untitled"}
-                    </p>
-                    <div className="flex items-center justify-center space-x-3 mt-1 text-xs text-gray-500">
-                      <span className="flex items-center space-x-1">
-                        <FiHeart className="w-3 h-3" />
-                        <span>{meme.likes?.length || 0}</span>
-                      </span>
-                      <span className="flex items-center space-x-1">
-                        <FiEye className="w-3 h-3" />
-                        <span>{meme.views || 0}</span>
-                      </span>
+                    <div className="flex-1 text-center md:text-left">
+                      <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
+                        {trendingMemes[0].title || "Featured Meme"}
+                      </h3>
+                      <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-4">
+                        <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-xl shadow-sm">
+                          <FiHeart className="w-5 h-5 text-red-500" />
+                          <span className="font-semibold text-gray-700">{trendingMemes[0].likes?.length || 0}</span>
+                        </div>
+                        <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-xl shadow-sm">
+                          <FiEye className="w-5 h-5 text-blue-500" />
+                          <span className="font-semibold text-gray-700">{trendingMemes[0].views || 0}</span>
+                        </div>
+                        <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-xl shadow-sm">
+                          <FiShare2 className="w-5 h-5 text-green-500" />
+                          <span className="font-semibold text-gray-700">{trendingMemes[0].shares || 0}</span>
+                        </div>
+                      </div>
+                      <p className="text-gray-600 text-sm md:text-base">
+                        This meme is blowing up! Join the conversation and see why everyone's talking about it.
+                      </p>
                     </div>
                   </div>
                 </div>
-              ))}
+              )}
+
+              {/* Other Trending Memes Grid */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">More Trending</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {trendingMemes.slice(1).map((meme, index) => (
+                    <div key={meme._id} className="group cursor-pointer">
+                      <div className="relative">
+                        <div className="w-full aspect-square rounded-2xl overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                          {meme.mediaType === "video" ? (
+                            <video
+                              src={meme.mediaUrl}
+                              className="w-full h-full object-cover"
+                              muted
+                              loop
+                            />
+                          ) : (
+                            <img
+                              src={meme.mediaUrl}
+                              alt={meme.title}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                        </div>
+                        <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg">
+                          #{index + 2}
+                        </div>
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-2xl"></div>
+                      </div>
+                      <div className="mt-3 text-center">
+                        <h4 className="font-medium text-gray-900 text-sm mb-2 line-clamp-2">
+                          {meme.title || "Untitled"}
+                        </h4>
+                        <div className="flex items-center justify-center space-x-3 text-xs text-gray-500">
+                          <span className="flex items-center space-x-1">
+                            <FiHeart className="w-3 h-3 text-red-500" />
+                            <span>{meme.likes?.length || 0}</span>
+                          </span>
+                          <span className="flex items-center space-x-1">
+                            <FiEye className="w-3 h-3 text-blue-500" />
+                            <span>{meme.views || 0}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           ) : (
-            <div className="text-center py-8">
-              <FiTrendingUp className="mx-auto text-gray-300 text-4xl mb-3" />
-              <p className="text-gray-500">No trending memes yet</p>
-              <p className="text-sm text-gray-400">Check back later for the latest trends</p>
+            <div className="text-center py-12">
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FiTrendingUp className="text-gray-400 text-4xl" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No trending memes yet</h3>
+              <p className="text-gray-600 mb-6">Be the first to create something amazing!</p>
+              <button
+                onClick={fetchTrendingMemes}
+                className="px-6 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors font-medium"
+              >
+                Try Again
+              </button>
             </div>
           )}
         </div>
