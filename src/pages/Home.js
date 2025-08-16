@@ -160,15 +160,18 @@ function Home({ user }) {
 
   {/* Centralized Search + Inline Controls */}
       <div className="sticky top-14 sm:top-16 z-20 bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="max-w-4xl mx-auto px-4 py-2">
+          <div className="flex flex-col sm:flex-row items-center gap-2">
             {/* Filters button (left) */}
             <div className="flex-shrink-0">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm ${
-                  showFilters ? 'bg-blue-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                className={`flex items-center space-x-2 px-3 py-1.5 rounded-md border transition-colors text-sm ${
+                  showFilters
+                    ? 'border-blue-500 text-blue-600 bg-blue-50'
+                    : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
                 }`}
+                aria-pressed={showFilters}
               >
                 <FiFilter className="w-3 h-3" />
                 <span className="font-medium">Filters</span>
@@ -179,19 +182,20 @@ function Home({ user }) {
             <div className="flex-1 w-full">
               <form onSubmit={handleSearch}>
                 <div className="relative">
-                  <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
+                  <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
                   <input
                     type="text"
                     placeholder="Search memes, tags or categories — press Enter"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200 text-sm"
+                    className="w-full pl-10 pr-9 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white transition-colors text-sm"
                   />
                   {searchQuery && (
                     <button
                       type="button"
                       onClick={clearSearch}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label="Clear search"
                     >
                       <FiX className="w-4 h-4" />
                     </button>
@@ -204,34 +208,35 @@ function Home({ user }) {
             <div className="flex-shrink-0">
               <Link
                 to="/trending"
-                className="flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-200 text-sm"
+                className="flex items-center space-x-2 px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors text-sm"
+                aria-label="View trending memes"
               >
-                <FiTrendingUp className="w-4 h-4" />
-                <span>Trending</span>
+                <FiTrendingUp className="w-4 h-4 text-gray-600" />
+                <span className="font-medium">Trending</span>
               </Link>
             </div>
           </div>
 
           {/* Compact Filter Options */}
           {showFilters && (
-            <div className="mt-3 p-3 bg-gray-50 rounded-xl animate-slideDown">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="mt-2 p-3 border border-gray-200 rounded-lg bg-white">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {/* Categories */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Categories</label>
-                  <div className="grid grid-cols-4 gap-1.5">
+          <label className="block text-xs font-medium text-gray-600 mb-2">Categories</label>
+          <div className="grid grid-cols-4 gap-1.5">
                     {categories.map((category) => (
                       <button
                         key={category.id}
                         onClick={() => handleFilterChange("category", category.id)}
-                        className={`p-2 rounded-lg border transition-all duration-200 flex flex-col items-center space-y-0.5 ${
+            className={`p-2 rounded-md border transition-colors flex flex-col items-center space-y-0.5 ${
                           selectedCategory === category.id
-                            ? "bg-blue-500 text-white border-blue-500 shadow-md"
-                            : "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-sm"
+              ? "bg-blue-50 text-blue-700 border-blue-300"
+              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                         }`}
                       >
                         <span className="text-sm">{category.icon}</span>
-                        <span className="text-xs font-medium leading-tight">{category.label}</span>
+            <span className="text-xs font-medium leading-tight">{category.label}</span>
                       </button>
                     ))}
                   </div>
@@ -239,16 +244,16 @@ function Home({ user }) {
 
                 {/* Sort Options */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-                  <div className="space-y-1.5">
+          <label className="block text-xs font-medium text-gray-600 mb-2">Sort By</label>
+          <div className="space-y-1.5">
                     {sortOptions.map((option) => (
                       <button
                         key={option.value}
                         onClick={() => handleFilterChange("sort", option.value)}
-                        className={`w-full p-2 rounded-lg border transition-all duration-200 flex items-center space-x-2 text-sm ${
+            className={`w-full p-2 rounded-md border transition-colors flex items-center space-x-2 text-sm ${
                           sortBy === option.value
-                            ? "bg-blue-500 text-white border-blue-500 shadow-md"
-                            : "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-sm"
+              ? "bg-blue-50 text-blue-700 border-blue-300"
+              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                         }`}
                       >
                         <span>{option.icon}</span>
