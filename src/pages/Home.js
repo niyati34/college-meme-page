@@ -9,7 +9,7 @@ function Home({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [playingVideoId, setPlayingVideoId] = useState(null);
-  
+
   // Advanced features
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -17,7 +17,7 @@ function Home({ user }) {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  
+
   const observer = useRef();
   const lastMemeRef = useRef();
 
@@ -30,7 +30,7 @@ function Home({ user }) {
     { id: "politics", label: "Politics", icon: "🗳️" },
     { id: "sports", label: "Sports", icon: "⚽" },
     { id: "tech", label: "Tech", icon: "💻" },
-    { id: "other", label: "Other", icon: "🎯" }
+    { id: "other", label: "Other", icon: "🎯" },
   ];
 
   const sortOptions = [
@@ -38,7 +38,7 @@ function Home({ user }) {
     { value: "trending", label: "Trending", icon: "🔥" },
     { value: "popular", label: "Popular", icon: "⭐" },
     { value: "mostViewed", label: "Most Viewed", icon: "👁️" },
-    { value: "oldest", label: "Oldest", icon: "📜" }
+    { value: "oldest", label: "Oldest", icon: "📜" },
   ];
 
   const handleVideoPlay = (memeId) => {
@@ -72,35 +72,38 @@ function Home({ user }) {
   };
 
   // Fetch memes with filters
-  const fetchAllMemes = useCallback(async (page = 1, reset = false) => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: "20",
-        sortBy,
-        ...(selectedCategory && { category: selectedCategory }),
-        ...(searchQuery && { search: searchQuery })
-      });
+  const fetchAllMemes = useCallback(
+    async (page = 1, reset = false) => {
+      try {
+        setLoading(true);
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: "20",
+          sortBy,
+          ...(selectedCategory && { category: selectedCategory }),
+          ...(searchQuery && { search: searchQuery }),
+        });
 
-      const { data } = await fetchMemes(params.toString());
-      
-      if (reset) {
-        setMemes(data.memes || []);
-        setCurrentPage(1);
-      } else {
-        setMemes(prev => [...prev, ...(data.memes || [])]);
+        const { data } = await fetchMemes(params.toString());
+
+        if (reset) {
+          setMemes(data.memes || []);
+          setCurrentPage(1);
+        } else {
+          setMemes((prev) => [...prev, ...(data.memes || [])]);
+        }
+
+        setHasMore(data.pagination?.hasNext || false);
+        setCurrentPage(page);
+      } catch (err) {
+        console.error("Error fetching memes:", err);
+        setError("Failed to load memes. Please try again later.");
+      } finally {
+        setLoading(false);
       }
-      
-      setHasMore(data.pagination?.hasNext || false);
-      setCurrentPage(page);
-    } catch (err) {
-      console.error("Error fetching memes:", err);
-      setError("Failed to load memes. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  }, [sortBy, selectedCategory, searchQuery]);
+    },
+    [sortBy, selectedCategory, searchQuery]
+  );
 
   // Initial load
   useEffect(() => {
@@ -109,16 +112,19 @@ function Home({ user }) {
   }, []);
 
   // Infinite scroll observer
-  const lastMemeElementRef = useCallback(node => {
-    if (loading) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        fetchAllMemes(currentPage + 1);
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [loading, hasMore, currentPage, fetchAllMemes]);
+  const lastMemeElementRef = useCallback(
+    (node) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchAllMemes(currentPage + 1);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore, currentPage, fetchAllMemes]
+  );
 
   // Handle filter changes
   const handleFilterChange = (filterType, value) => {
@@ -141,7 +147,9 @@ function Home({ user }) {
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <FiX className="text-red-500 text-2xl" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Oops! Something went wrong</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Oops! Something went wrong
+            </h3>
             <p className="text-gray-600 mb-6">{error}</p>
             <button
               onClick={() => window.location.reload()}
@@ -157,8 +165,7 @@ function Home({ user }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-
-  {/* Centralized Search + Inline Controls */}
+      {/* Centralized Search + Inline Controls */}
       <div className="sticky top-14 sm:top-16 z-20 bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 py-2">
           <div className="flex flex-col sm:flex-row items-center gap-2">
@@ -168,8 +175,8 @@ function Home({ user }) {
                 onClick={() => setShowFilters(!showFilters)}
                 className={`flex items-center space-x-2 px-3 py-1.5 rounded-md border transition-colors text-sm ${
                   showFilters
-                    ? 'border-blue-500 text-blue-600 bg-blue-50'
-                    : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                    ? "border-blue-500 text-blue-600 bg-blue-50"
+                    : "border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
                 }`}
                 aria-pressed={showFilters}
               >
@@ -223,20 +230,26 @@ function Home({ user }) {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {/* Categories */}
                 <div>
-          <label className="block text-xs font-medium text-gray-600 mb-2">Categories</label>
-          <div className="grid grid-cols-4 gap-1.5">
+                  <label className="block text-xs font-medium text-gray-600 mb-2">
+                    Categories
+                  </label>
+                  <div className="grid grid-cols-4 gap-1.5">
                     {categories.map((category) => (
                       <button
                         key={category.id}
-                        onClick={() => handleFilterChange("category", category.id)}
-            className={`p-2 rounded-md border transition-colors flex flex-col items-center space-y-0.5 ${
+                        onClick={() =>
+                          handleFilterChange("category", category.id)
+                        }
+                        className={`p-2 rounded-md border transition-colors flex flex-col items-center space-y-0.5 ${
                           selectedCategory === category.id
-              ? "bg-blue-50 text-blue-700 border-blue-300"
-              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                            ? "bg-blue-50 text-blue-700 border-blue-300"
+                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                         }`}
                       >
                         <span className="text-sm">{category.icon}</span>
-            <span className="text-xs font-medium leading-tight">{category.label}</span>
+                        <span className="text-xs font-medium leading-tight">
+                          {category.label}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -244,16 +257,18 @@ function Home({ user }) {
 
                 {/* Sort Options */}
                 <div>
-          <label className="block text-xs font-medium text-gray-600 mb-2">Sort By</label>
-          <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-gray-600 mb-2">
+                    Sort By
+                  </label>
+                  <div className="space-y-1.5">
                     {sortOptions.map((option) => (
                       <button
                         key={option.value}
                         onClick={() => handleFilterChange("sort", option.value)}
-            className={`w-full p-2 rounded-md border transition-colors flex items-center space-x-2 text-sm ${
+                        className={`w-full p-2 rounded-md border transition-colors flex items-center space-x-2 text-sm ${
                           sortBy === option.value
-              ? "bg-blue-50 text-blue-700 border-blue-300"
-              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                            ? "bg-blue-50 text-blue-700 border-blue-300"
+                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                         }`}
                       >
                         <span>{option.icon}</span>
@@ -275,8 +290,12 @@ function Home({ user }) {
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <FiGrid className="text-gray-400 text-3xl" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No memes found</h3>
-            <p className="text-gray-600 mb-6">Try adjusting your filters or search terms</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              No memes found
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Try adjusting your filters or search terms
+            </p>
             <button
               onClick={resetFilters}
               className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors font-medium"
@@ -329,7 +348,9 @@ function Home({ user }) {
             <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-white text-2xl">🎉</span>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">You've reached the end!</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              You've reached the end!
+            </h3>
             <p className="text-gray-600">Check back later for fresh memes</p>
           </div>
         )}

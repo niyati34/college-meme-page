@@ -1,6 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-import { FaPlus, FaHome, FaSearch, FaBookmark, FaUser, FaCog, FaSignOutAlt, FaChevronDown } from "react-icons/fa";
+import {
+  FaPlus,
+  FaHome,
+  FaSearch,
+  FaBookmark,
+  FaUser,
+  FaCog,
+  FaSignOutAlt,
+  FaChevronDown,
+} from "react-icons/fa";
 
 export default function Header({ user, onLogout }) {
   const navigate = useNavigate();
@@ -41,7 +50,11 @@ export default function Header({ user, onLogout }) {
           </div>
 
           <div className="flex items-center space-x-3">
-            <Link to="/" className="text-gray-600 hover:text-gray-800" aria-label="Home">
+            <Link
+              to="/"
+              className="text-gray-600 hover:text-gray-800"
+              aria-label="Home"
+            >
               <FaHome className="w-5 h-5" />
             </Link>
 
@@ -49,7 +62,10 @@ export default function Header({ user, onLogout }) {
               Login
             </Link>
 
-            <Link to="/register" className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm">
+            <Link
+              to="/register"
+              className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm"
+            >
               Sign Up
             </Link>
           </div>

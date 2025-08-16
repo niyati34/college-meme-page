@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { FiTrendingUp, FiRefreshCw, FiHeart, FiEye, FiShare2, FiArrowLeft } from "react-icons/fi";
+import {
+  FiTrendingUp,
+  FiRefreshCw,
+  FiHeart,
+  FiEye,
+  FiShare2,
+  FiArrowLeft,
+} from "react-icons/fi";
 import { Link } from "react-router-dom";
 
 function Trending() {
@@ -10,7 +17,11 @@ function Trending() {
   const fetchTrendingMemes = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/memes/trending?limit=12`);
+      const response = await fetch(
+        `${
+          process.env.REACT_APP_API_URL || "http://localhost:5000/api"
+        }/memes/trending?limit=12`
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -48,8 +59,8 @@ function Trending() {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="p-2 text-gray-500 hover:text-gray-700 transition-colors rounded-md hover:bg-gray-100"
               >
                 <FiArrowLeft className="w-5 h-5" />
@@ -59,8 +70,12 @@ function Trending() {
                   <FiTrendingUp className="text-gray-700 text-lg" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-semibold text-gray-900">Trending</h1>
-                  <p className="text-gray-600 text-sm">What's getting attention right now</p>
+                  <h1 className="text-xl font-semibold text-gray-900">
+                    Trending
+                  </h1>
+                  <p className="text-gray-600 text-sm">
+                    What's getting attention right now
+                  </p>
                 </div>
               </div>
             </div>
@@ -69,7 +84,9 @@ function Trending() {
               disabled={loading}
               className="flex items-center space-x-2 px-3 py-1.5 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
-              <FiRefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <FiRefreshCw
+                className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
+              />
               <span className="text-sm">Refresh</span>
             </button>
           </div>
@@ -113,19 +130,27 @@ function Trending() {
                       <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 mb-5 text-sm">
                         <div className="flex items-center space-x-2 px-3 py-1.5 rounded-md border border-gray-300 bg-white">
                           <FiHeart className="w-4 h-4 text-gray-600" />
-                          <span className="font-medium text-gray-700">{trendingMemes[0].likes?.length || 0}</span>
+                          <span className="font-medium text-gray-700">
+                            {trendingMemes[0].likes?.length || 0}
+                          </span>
                         </div>
                         <div className="flex items-center space-x-2 px-3 py-1.5 rounded-md border border-gray-300 bg-white">
                           <FiEye className="w-4 h-4 text-gray-600" />
-                          <span className="font-medium text-gray-700">{trendingMemes[0].views || 0}</span>
+                          <span className="font-medium text-gray-700">
+                            {trendingMemes[0].views || 0}
+                          </span>
                         </div>
                         <div className="flex items-center space-x-2 px-3 py-1.5 rounded-md border border-gray-300 bg-white">
                           <FiShare2 className="w-4 h-4 text-gray-600" />
-                          <span className="font-medium text-gray-700">{trendingMemes[0].shares || 0}</span>
+                          <span className="font-medium text-gray-700">
+                            {trendingMemes[0].shares || 0}
+                          </span>
                         </div>
                       </div>
                       <p className="text-gray-600 leading-relaxed">
-                        This meme is currently trending across the platform. Join the conversation and see why everyone's talking about it!
+                        This meme is currently trending across the platform.
+                        Join the conversation and see why everyone's talking
+                        about it!
                       </p>
                     </div>
                   </div>
@@ -135,7 +160,9 @@ function Trending() {
 
             {/* Other Trending Memes Grid */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">More Trending</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                More Trending
+              </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
                 {trendingMemes.slice(1).map((meme, index) => (
                   <div key={meme._id} className="group cursor-pointer">
@@ -186,8 +213,12 @@ function Trending() {
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <FiTrendingUp className="text-gray-400 text-4xl" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No trending memes yet</h3>
-            <p className="text-gray-600 mb-6">Be the first to create something amazing!</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              No trending memes yet
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Be the first to create something amazing!
+            </p>
             <button
               onClick={fetchTrendingMemes}
               className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors font-medium"
