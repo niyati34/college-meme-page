@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { fetchMemes } from "../api";
 import MemeCard from "../components/MemeCard";
-import { FiFilter, FiSearch, FiGrid, FiX, FiTrendingUp } from "react-icons/fi";
+import { FiFilter, FiGrid, FiX, FiTrendingUp } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
 function Home({ user }) {
@@ -15,7 +15,6 @@ function Home({ user }) {
   const [hasMore, setHasMore] = useState(true);
   const [sortBy, setSortBy] = useState("newest");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   
   const observer = useRef();
@@ -54,7 +53,6 @@ function Home({ user }) {
         limit: "20",
         sortBy,
         ...(selectedCategory && { category: selectedCategory }),
-        ...(searchQuery && { search: searchQuery })
       });
 
       const { data } = await fetchMemes(params.toString());
@@ -74,7 +72,7 @@ function Home({ user }) {
     } finally {
       setLoading(false);
     }
-  }, [sortBy, selectedCategory, searchQuery]);
+  }, [sortBy, selectedCategory]);
 
   // Infinite scroll observer
   const lastMemeElementRef = useCallback(node => {
@@ -100,30 +98,10 @@ function Home({ user }) {
     setHasMore(true);
   };
 
-  // Handle search
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-    setCurrentPage(1);
-    setMemes([]);
-    setHasMore(true);
-    fetchAllMemes(1, true);
-  };
-
   // Reset filters
   const resetFilters = () => {
     setSelectedCategory("");
     setSortBy("newest");
-    setSearchQuery("");
-    setCurrentPage(1);
-    setMemes([]);
-    setHasMore(true);
-    fetchAllMemes(1, true);
-  };
-
-  // Clear search
-  const clearSearch = () => {
-    setSearchQuery("");
     setCurrentPage(1);
     setMemes([]);
     setHasMore(true);
@@ -190,29 +168,6 @@ function Home({ user }) {
       {/* Enhanced Filters and Search */}
       <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          {/* Search Bar */}
-          <form onSubmit={handleSearch} className="mb-4">
-            <div className="relative max-w-2xl mx-auto">
-              <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
-              <input
-                type="text"
-                placeholder="Search for memes, tags, or categories..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={clearSearch}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <FiX className="w-5 h-5" />
-                </button>
-              )}
-            </div>
-          </form>
-
           {/* Filter Controls */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -228,7 +183,7 @@ function Home({ user }) {
                 <span className="font-medium">Filters</span>
               </button>
               
-              {(selectedCategory || searchQuery || sortBy !== "newest") && (
+              {(selectedCategory || sortBy !== "newest") && (
                 <button
                   onClick={resetFilters}
                   className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
