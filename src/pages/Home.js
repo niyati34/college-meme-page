@@ -171,11 +171,10 @@ function Home({ user }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Minimalistic Header with Trending Link */}
+      {/* Clean Header with Trending Link */}
       <div className="bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">MemeVerse</h1>
+          <div className="flex items-center justify-end">
             <Link 
               to="/trending"
               className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200 font-medium"
@@ -187,92 +186,92 @@ function Home({ user }) {
         </div>
       </div>
 
-      {/* Enhanced Filters and Search */}
-      <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+      {/* Compact Filters and Search */}
+      <div className="sticky top-14 sm:top-16 z-20 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 py-3">
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="mb-4">
-            <div className="relative max-w-2xl mx-auto">
-              <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+          <form onSubmit={handleSearch} className="mb-3">
+            <div className="relative max-w-xl mx-auto">
+              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
               <input
                 type="text"
-                placeholder="Search for memes, tags, or categories..."
+                placeholder="Search memes..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
+                className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200 text-sm"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={clearSearch}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <FiX className="w-5 h-5" />
+                  <FiX className="w-4 h-4" />
                 </button>
               )}
             </div>
           </form>
 
-          {/* Filter Controls */}
+          {/* Compact Filter Controls */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 ${
+                className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm ${
                   showFilters 
-                    ? 'bg-blue-500 text-white shadow-lg' 
+                    ? 'bg-blue-500 text-white shadow-md' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                <FiFilter className="w-4 h-4" />
+                <FiFilter className="w-3 h-3" />
                 <span className="font-medium">Filters</span>
               </button>
               
               {(selectedCategory || searchQuery || sortBy !== "newest") && (
                 <button
                   onClick={resetFilters}
-                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                  className="px-3 py-1.5 text-xs text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                 >
                   Clear All
                 </button>
               )}
             </div>
 
-            {/* Active Filters Display */}
+            {/* Compact Active Filters Display */}
             <div className="flex items-center space-x-2">
               {selectedCategory && (
-                <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full">
+                <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
                   {categories.find(c => c.id === selectedCategory)?.label}
                 </span>
               )}
               {sortBy !== "newest" && (
-                <span className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full">
+                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
                   {sortOptions.find(s => s.value === sortBy)?.label}
                 </span>
               )}
             </div>
           </div>
 
-          {/* Enhanced Filter Options */}
+          {/* Compact Filter Options */}
           {showFilters && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-2xl animate-slideDown">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="mt-3 p-3 bg-gray-50 rounded-xl animate-slideDown">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* Categories */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Categories</label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Categories</label>
+                  <div className="grid grid-cols-4 gap-1.5">
                     {categories.map((category) => (
                       <button
                         key={category.id}
                         onClick={() => handleFilterChange("category", category.id)}
-                        className={`p-3 rounded-xl border-2 transition-all duration-200 flex flex-col items-center space-y-1 ${
+                        className={`p-2 rounded-lg border transition-all duration-200 flex flex-col items-center space-y-0.5 ${
                           selectedCategory === category.id
-                            ? "bg-blue-500 text-white border-blue-500 shadow-lg scale-105"
-                            : "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-md"
+                            ? "bg-blue-500 text-white border-blue-500 shadow-md"
+                            : "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-sm"
                         }`}
                       >
-                        <span className="text-lg">{category.icon}</span>
-                        <span className="text-xs font-medium">{category.label}</span>
+                        <span className="text-sm">{category.icon}</span>
+                        <span className="text-xs font-medium leading-tight">{category.label}</span>
                       </button>
                     ))}
                   </div>
@@ -280,19 +279,19 @@ function Home({ user }) {
 
                 {/* Sort Options */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Sort By</label>
-                  <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                  <div className="space-y-1.5">
                     {sortOptions.map((option) => (
                       <button
                         key={option.value}
                         onClick={() => handleFilterChange("sort", option.value)}
-                        className={`w-full p-3 rounded-xl border-2 transition-all duration-200 flex items-center space-x-3 ${
+                        className={`w-full p-2 rounded-lg border transition-all duration-200 flex items-center space-x-2 text-sm ${
                           sortBy === option.value
-                            ? "bg-blue-500 text-white border-blue-500 shadow-lg"
-                            : "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-md"
+                            ? "bg-blue-500 text-white border-blue-500 shadow-md"
+                            : "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-sm"
                         }`}
                       >
-                        <span className="text-lg">{option.icon}</span>
+                        <span>{option.icon}</span>
                         <span className="font-medium">{option.label}</span>
                       </button>
                     ))}

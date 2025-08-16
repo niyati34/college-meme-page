@@ -36,28 +36,11 @@ export default function Header({ user, onLogout }) {
             MemeVerse
           </Link>
 
-          {/* Search Bar - Hidden on mobile, shown on tablet+ */}
-          <div className="hidden md:flex flex-1 max-w-xs mx-4 lg:mx-8">
-            <div className="relative w-full">
-              <input
-                type="text"
-                placeholder="Search"
-                className="w-full bg-gray-100 border-none rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
-              />
-              <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            </div>
-          </div>
-
           {/* Navigation */}
           <nav className="flex items-center space-x-4 sm:space-x-6">
             <Link to="/" className="hover:opacity-50 transition-opacity p-2">
               <FaHome className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
             </Link>
-
-            {/* Search icon for mobile */}
-            <button className="md:hidden hover:opacity-50 transition-opacity p-2">
-              <FaSearch className="w-5 h-5 text-black" />
-            </button>
 
             {user && user.role === "admin" && (
               <Link
