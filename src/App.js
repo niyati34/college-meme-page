@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import Upload from "./pages/Upload";
 import Saved from "./pages/Saved";
 import Profile from "./pages/Profile";
+import Trending from "./pages/Trending";
 import Header from "./components/Header";
 import "./styles/custom.css";
 
@@ -46,6 +47,7 @@ function App() {
         <Header user={user} onLogout={handleLogout} />
         <Routes>
           <Route path="/" element={<Home user={user} />} />
+          <Route path="/trending" element={<Trending />} />
           <Route path="/meme/:id" element={<MemeDetails user={user} />} />
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/register" element={<Register />} />
