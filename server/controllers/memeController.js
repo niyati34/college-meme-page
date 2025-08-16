@@ -5,31 +5,31 @@ const mongoose = require("mongoose");
 
 exports.getAllMemes = async (req, res) => {
   try {
-    const { 
-      page = 1, 
-      limit = 20, 
-      category, 
+    const {
+      page = 1,
+      limit = 20,
+      category,
       sortBy = "newest",
       search,
-      tags
+      tags,
     } = req.query;
 
     const skip = (page - 1) * limit;
-    
+
     // Build filter object
     let filter = { status: "active" };
-    
+
     if (category) {
       filter.categories = category;
     }
-    
+
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: "i" } },
-        { tags: { $in: [new RegExp(search, "i")] } }
+        { tags: { $in: [new RegExp(search, "i")] } },
       ];
     }
-    
+
     if (tags) {
       const tagArray = tags.split(",");
       filter.tags = { $in: tagArray };
@@ -64,7 +64,7 @@ exports.getAllMemes = async (req, res) => {
     const memesWithStats = await Promise.all(
       memes.map(async (meme) => {
         const commentCount = await Comment.countDocuments({ memeId: meme._id });
-        
+
         // Update trending score if not set
         if (!meme.trendingScore) {
           meme.calculateTrendingScore();
@@ -102,8 +102,8 @@ exports.getAllMemes = async (req, res) => {
         totalPages: Math.ceil(total / limit),
         totalMemes: total,
         hasNext: page * limit < total,
-        hasPrev: page > 1
-      }
+        hasPrev: page > 1,
+      },
     });
   } catch (err) {
     console.error("Error fetching all memes:", err);
@@ -115,7 +115,7 @@ exports.getAllMemes = async (req, res) => {
 exports.getTrendingMemes = async (req, res) => {
   try {
     const { limit = 10 } = req.query;
-    
+
     const trendingMemes = await Meme.find({ status: "active" })
       .populate("author", "username avatarUrl profile.displayName")
       .sort({ trendingScore: -1, createdAt: -1 })
@@ -133,21 +133,21 @@ exports.getMemesByCategory = async (req, res) => {
   try {
     const { category } = req.params;
     const { page = 1, limit = 20 } = req.query;
-    
+
     const skip = (page - 1) * limit;
-    
-    const memes = await Meme.find({ 
-      categories: category, 
-      status: "active" 
+
+    const memes = await Meme.find({
+      categories: category,
+      status: "active",
     })
       .populate("author", "username avatarUrl profile.displayName")
       .sort({ trendingScore: -1, createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
 
-    const total = await Meme.countDocuments({ 
-      categories: category, 
-      status: "active" 
+    const total = await Meme.countDocuments({
+      categories: category,
+      status: "active",
     });
 
     res.status(200).json({
@@ -155,8 +155,8 @@ exports.getMemesByCategory = async (req, res) => {
       pagination: {
         currentPage: parseInt(page),
         totalPages: Math.ceil(total / limit),
-        totalMemes: total
-      }
+        totalMemes: total,
+      },
     });
   } catch (err) {
     console.error("Error fetching memes by category:", err);
@@ -168,20 +168,20 @@ exports.getMemesByCategory = async (req, res) => {
 exports.searchMemes = async (req, res) => {
   try {
     const { q, page = 1, limit = 20 } = req.query;
-    
+
     if (!q) {
       return res.status(400).json({ message: "Search query is required" });
     }
 
     const skip = (page - 1) * limit;
-    
+
     const searchFilter = {
       status: "active",
       $or: [
         { title: { $regex: q, $options: "i" } },
         { tags: { $in: [new RegExp(q, "i")] } },
-        { categories: { $in: [new RegExp(q, "i")] } }
-      ]
+        { categories: { $in: [new RegExp(q, "i")] } },
+      ],
     };
 
     const memes = await Meme.find(searchFilter)
@@ -198,8 +198,8 @@ exports.searchMemes = async (req, res) => {
       pagination: {
         currentPage: parseInt(page),
         totalPages: Math.ceil(total / limit),
-        totalResults: total
-      }
+        totalResults: total,
+      },
     });
   } catch (err) {
     console.error("Error searching memes:", err);

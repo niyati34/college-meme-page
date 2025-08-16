@@ -69,7 +69,7 @@ export default function Upload({ user }) {
             <label className="block mb-2 font-semibold">Aspect Ratio</label>
             <select
               value={aspectRatio}
-              onChange={e => setAspectRatio(e.target.value)}
+              onChange={(e) => setAspectRatio(e.target.value)}
               className="w-full p-2 border rounded"
             >
               <option value="normal">Normal (1:1 or 4:5)</option>
