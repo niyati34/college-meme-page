@@ -102,6 +102,12 @@ function Home({ user }) {
     }
   }, [sortBy, selectedCategory, searchQuery]);
 
+  // Initial load
+  useEffect(() => {
+    fetchAllMemes(1, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Infinite scroll observer
   const lastMemeElementRef = useCallback(node => {
     if (loading) return;
@@ -151,22 +157,8 @@ function Home({ user }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Clean Header with Trending Link */}
-      <div className="bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-end">
-            <Link 
-              to="/trending"
-              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200 font-medium"
-            >
-              <FiTrendingUp className="w-4 h-4" />
-              <span>Trending</span>
-            </Link>
-          </div>
-        </div>
-      </div>
 
-      {/* Centralized Search + Inline Controls */}
+  {/* Centralized Search + Inline Controls */}
       <div className="sticky top-14 sm:top-16 z-20 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -297,7 +289,7 @@ function Home({ user }) {
                       meme={meme}
                       user={user}
                       onVideoPlay={handleVideoPlay}
-                      isPlaying={playingVideoId === meme._id}
+                      playingVideoId={playingVideoId}
                     />
                   </div>
                 );
@@ -308,7 +300,7 @@ function Home({ user }) {
                     meme={meme}
                     user={user}
                     onVideoPlay={handleVideoPlay}
-                    isPlaying={playingVideoId === meme._id}
+                    playingVideoId={playingVideoId}
                   />
                 );
               }
