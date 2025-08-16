@@ -159,8 +159,8 @@ function Home({ user }) {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
 
   {/* Centralized Search + Inline Controls */}
-      <div className="sticky top-14 sm:top-16 z-20 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-3">
+      <div className="sticky top-14 sm:top-16 z-20 bg-white border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row items-center gap-3">
             {/* Filters button (left) */}
             <div className="flex-shrink-0">

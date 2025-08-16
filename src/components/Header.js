@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-import logo from "../logo.svg";
 import { FaPlus, FaHome, FaSearch, FaBookmark, FaUser, FaCog, FaSignOutAlt, FaChevronDown } from "react-icons/fa";
 
 export default function Header({ user, onLogout }) {
@@ -34,7 +33,9 @@ export default function Header({ user, onLogout }) {
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Link to="/" className="flex items-center gap-2">
-              <img src={logo} alt="logo" className="w-8 h-8" />
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">M</span>
+              </div>
               <span className="font-semibold text-lg">MemeVerse</span>
             </Link>
           </div>
