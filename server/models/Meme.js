@@ -16,13 +16,17 @@ const memeSchema = new mongoose.Schema(
     shares: { type: Number, default: 0 },
     categories: [{ type: String }],
     tags: [{ type: String }],
-    status: { type: String, enum: ["active", "inactive", "deleted"], default: "active" },
+    status: {
+      type: String,
+      enum: ["active", "inactive", "deleted"],
+      default: "active",
+    },
     aspectRatio: {
       type: String,
       enum: ["normal", "reel"],
-      default: "normal"
+      default: "normal",
     },
-    trendingScore: { type: Number, default: 0 }
+    trendingScore: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
@@ -32,8 +36,10 @@ memeSchema.methods.calculateTrendingScore = function () {
   // Calculate trending score based on likes, views, and recency
   const likeScore = (this.likes?.length || 0) * 2;
   const viewScore = this.views || 0;
-  const timeScore = Math.floor((Date.now() - this.createdAt.getTime()) / (1000 * 60 * 60 * 24)); // Days since creation
-  
+  const timeScore = Math.floor(
+    (Date.now() - this.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+  ); // Days since creation
+
   // Higher score for newer content, but still consider engagement
   this.trendingScore = likeScore + viewScore + Math.max(0, 10 - timeScore);
   return this.trendingScore;
