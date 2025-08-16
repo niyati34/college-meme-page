@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
+import logo from "../logo.svg";
 import { FaPlus, FaHome, FaSearch, FaBookmark, FaUser, FaCog, FaSignOutAlt, FaChevronDown } from "react-icons/fa";
 
 export default function Header({ user, onLogout }) {

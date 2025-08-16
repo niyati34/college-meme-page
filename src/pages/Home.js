@@ -45,6 +45,32 @@ function Home({ user }) {
     setPlayingVideoId(memeId);
   };
 
+  // Search submit handler
+  const handleSearch = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setCurrentPage(1);
+    setMemes([]);
+    fetchAllMemes(1, true);
+  };
+
+  // Clear search input
+  const clearSearch = () => {
+    setSearchQuery("");
+    setCurrentPage(1);
+    setMemes([]);
+    fetchAllMemes(1, true);
+  };
+
+  // Reset all filters
+  const resetFilters = () => {
+    setSelectedCategory("");
+    setSortBy("newest");
+    setSearchQuery("");
+    setCurrentPage(1);
+    setMemes([]);
+    fetchAllMemes(1, true);
+  };
+
   // Fetch memes with filters
   const fetchAllMemes = useCallback(async (page = 1, reset = false) => {
     try {
