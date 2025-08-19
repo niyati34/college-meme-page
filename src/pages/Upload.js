@@ -89,11 +89,18 @@ export default function Upload({ user }) {
             {media ? (
               <div className="space-y-4 slide-in">
                 {media.type.startsWith("image/") ? (
-                  <div className="relative inline-block">
+                  <div
+                    className={
+                      aspectRatio === "reel"
+                        ? "reel-container inline-block w-40 sm:w-48 rounded-lg shadow-md"
+                        : "relative inline-block rounded-lg shadow-md"
+                    }
+                    style={aspectRatio === "reel" ? {} : {}}
+                  >
                     <img
                       src={URL.createObjectURL(media)}
                       alt="Preview"
-                      className="max-h-48 sm:max-h-64 max-w-full rounded-lg shadow-md"
+                      className={aspectRatio === "reel" ? "w-full h-full" : "max-h-48 sm:max-h-64 max-w-full"}
                     />
                     <div className="absolute top-2 right-2 bg-black bg-opacity-50 rounded-full p-1">
                       <FaImage className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
