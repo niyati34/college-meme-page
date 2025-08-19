@@ -9,11 +9,20 @@ export default function Upload({ user }) {
   const [media, setMedia] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!media || !title) return;
+    setError("");
+    if (!user || user.role !== "admin") {
+      setError("Only admins can upload. Please login as admin.");
+      return;
+    }
+    if (!media || !title) {
+      setError("Please add a caption and select a file.");
+      return;
+    }
     setLoading(true);
     try {
       const formData = new FormData();
@@ -26,7 +35,8 @@ export default function Upload({ user }) {
       setMedia(null);
       navigate("/");
     } catch (err) {
-      // handle error (show toast, etc)
+      const apiMessage = err?.response?.data?.message || err?.response?.data?.error;
+      setError(apiMessage || "Upload failed. Check your permissions and try again.");
     } finally {
       setLoading(false);
     }
@@ -65,6 +75,9 @@ export default function Upload({ user }) {
               {title.length}/2200
             </div>
           </div>
+          {error && (
+            <div className="mb-4 text-sm text-red-600">{error}</div>
+          )}
           <div className="mb-4">
             <label className="block mb-2 font-semibold">Aspect Ratio</label>
             <select
