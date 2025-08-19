@@ -12,7 +12,17 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: "memes", // Cloudinary folder name
-    allowed_formats: ["jpg", "jpeg", "png", "gif", "mp4", "mov", "avi"],
+    allowed_formats: [
+      "jpg",
+      "jpeg",
+      "png",
+      "gif",
+      "mp4",
+      "mov",
+      "avi",
+      "mkv",
+      "webm",
+    ],
     resource_type: "auto",
   },
 });
