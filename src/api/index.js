@@ -62,3 +62,8 @@ export const uploadMeme = (formData, token) =>
       "Content-Type": "multipart/form-data",
     },
   });
+
+export const uploadMemeFromUrl = (payload, token) =>
+  API.post("/api/memes/create-from-url", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
