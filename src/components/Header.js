@@ -58,16 +58,45 @@ export default function Header({ user, onLogout }) {
               <FaHome className="w-5 h-5" />
             </Link>
 
-            <Link to="/login" className="text-blue-600 font-medium">
-              Login
-            </Link>
-
-            <Link
-              to="/register"
-              className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm"
-            >
-              Sign Up
-            </Link>
+            {!user ? (
+              <>
+                <Link to="/login" className="text-blue-600 font-medium">
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm"
+                >
+                  Sign Up
+                </Link>
+              </>
+            ) : (
+              <>
+                {user.role === "admin" && (
+                  <Link
+                    to="/upload"
+                    className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm flex items-center gap-1"
+                  >
+                    <FaPlus className="w-3 h-3" />
+                    Upload
+                  </Link>
+                )}
+                <Link
+                  to={`/profile/${user.username || "me"}`}
+                  className="text-gray-700 hover:text-gray-900 flex items-center gap-1"
+                >
+                  <FaUser className="w-4 h-4" />
+                  <span>{user.username || "Profile"}</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-700 hover:text-gray-900 flex items-center gap-1"
+                >
+                  <FaSignOutAlt className="w-4 h-4" />
+                  Logout
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
