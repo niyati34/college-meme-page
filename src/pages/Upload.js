@@ -35,8 +35,11 @@ export default function Upload({ user }) {
       setMedia(null);
       navigate("/");
     } catch (err) {
-      const apiMessage = err?.response?.data?.message || err?.response?.data?.error;
-      setError(apiMessage || "Upload failed. Check your permissions and try again.");
+      const apiMessage =
+        err?.response?.data?.message || err?.response?.data?.error;
+      setError(
+        apiMessage || "Upload failed. Check your permissions and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -75,9 +78,7 @@ export default function Upload({ user }) {
               {title.length}/2200
             </div>
           </div>
-          {error && (
-            <div className="mb-4 text-sm text-red-600">{error}</div>
-          )}
+          {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
           <div className="mb-4">
             <label className="block mb-2 font-semibold">Aspect Ratio</label>
             <select
@@ -113,7 +114,11 @@ export default function Upload({ user }) {
                     <img
                       src={URL.createObjectURL(media)}
                       alt="Preview"
-                      className={aspectRatio === "reel" ? "w-full h-full" : "max-h-48 sm:max-h-64 max-w-full"}
+                      className={
+                        aspectRatio === "reel"
+                          ? "w-full h-full"
+                          : "max-h-48 sm:max-h-64 max-w-full"
+                      }
                     />
                     <div className="absolute top-2 right-2 bg-black bg-opacity-50 rounded-full p-1">
                       <FaImage className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
