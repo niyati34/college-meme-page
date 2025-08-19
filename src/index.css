@@ -73,6 +73,7 @@ img {
 .reel-container {
   position: relative;
   background-color: #000;
+  aspect-ratio: 9 / 16; /* Maintain vertical reel container ratio */
 }
 
 .reel-container img,
