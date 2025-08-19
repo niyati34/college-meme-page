@@ -286,7 +286,9 @@ exports.createMeme = async (req, res) => {
     console.log("Creating new meme with body:", req.body);
 
     const { title } = req.body;
-    const rawAspectRatio = (req.body.aspectRatio || "normal").toString().toLowerCase();
+    const rawAspectRatio = (req.body.aspectRatio || "normal")
+      .toString()
+      .toLowerCase();
     const aspectRatio = rawAspectRatio === "reel" ? "reel" : "normal";
     const file = req.file;
 
@@ -322,6 +324,53 @@ exports.createMeme = async (req, res) => {
     res.status(201).json(populatedMeme);
   } catch (err) {
     console.error("Error creating meme:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Create meme from a pre-uploaded media URL (avoids serverless body limits)
+exports.createMemeFromUrl = async (req, res) => {
+  try {
+    const {
+      title = "",
+      mediaUrl,
+      aspectRatio = "normal",
+      mediaType,
+    } = req.body;
+
+    if (!mediaUrl) {
+      return res.status(400).json({ message: "mediaUrl is required" });
+    }
+
+    // Infer media type if not provided
+    let resolvedMediaType = mediaType;
+    if (!resolvedMediaType) {
+      const lower = mediaUrl.toLowerCase();
+      const isVideo = [".mp4", ".mov", ".avi", ".mkv", ".webm"].some((ext) =>
+        lower.includes(ext)
+      );
+      resolvedMediaType = isVideo ? "video" : "image";
+    }
+
+    const normalizedAspectRatio = aspectRatio === "reel" ? "reel" : "normal";
+
+    const newMeme = new Meme({
+      title,
+      mediaUrl,
+      mediaType: resolvedMediaType,
+      author: req.user.id,
+      likes: [],
+      aspectRatio: normalizedAspectRatio,
+    });
+
+    await newMeme.save();
+    const populatedMeme = await newMeme.populate(
+      "author",
+      "username avatarUrl"
+    );
+    res.status(201).json(populatedMeme);
+  } catch (err) {
+    console.error("Error creating meme from URL:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

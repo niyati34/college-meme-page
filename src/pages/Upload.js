@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaImage, FaCloudUploadAlt } from "react-icons/fa";
-import { uploadMeme } from "../api";
+import { uploadMeme, uploadMemeFromUrl } from "../api";
 
 export default function Upload({ user }) {
   const [title, setTitle] = useState("");
@@ -9,24 +9,74 @@ export default function Upload({ user }) {
   const [media, setMedia] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!media || !title) return;
+    setError("");
+    if (!user || user.role !== "admin") {
+      setError("Only admins can upload. Please login as admin.");
+      return;
+    }
+    if (!media || !title) {
+      setError("Please add a caption and select a file.");
+      return;
+    }
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("aspectRatio", aspectRatio);
-      formData.append("media", media);
-      await uploadMeme(formData, user?.token);
+      // Try normal multipart upload first (small files)
+      try {
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("aspectRatio", aspectRatio);
+        formData.append("media", media);
+        await uploadMeme(formData, user?.token);
+      } catch (innerErr) {
+        // If payload too large (413), fallback to direct-to-Cloudinary then create-from-url
+        const status = innerErr?.response?.status;
+        if (status !== 413) throw innerErr;
+
+        // Require env for client-side upload
+        const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
+        if (!cloudName || !uploadPreset) {
+          throw { message: "Large file: missing Cloudinary env for client upload" };
+        }
+
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
+        const cloudForm = new FormData();
+        cloudForm.append("file", media);
+        cloudForm.append("upload_preset", uploadPreset);
+        const cloudRes = await fetch(cloudinaryUrl, { method: "POST", body: cloudForm });
+        if (!cloudRes.ok) {
+          const t = await cloudRes.text();
+          throw { message: `Cloudinary upload failed: ${t}` };
+        }
+        const cloudJson = await cloudRes.json();
+        const secureUrl = cloudJson.secure_url;
+        if (!secureUrl) throw { message: "Cloudinary upload response missing secure_url" };
+
+        await uploadMemeFromUrl(
+          {
+            title,
+            mediaUrl: secureUrl,
+            aspectRatio,
+            mediaType: media.type.startsWith("video/") ? "video" : "image",
+          },
+          user?.token
+        );
+      }
       setTitle("");
       setAspectRatio("normal");
       setMedia(null);
       navigate("/");
     } catch (err) {
-      // handle error (show toast, etc)
+      const apiMessage =
+        err?.response?.data?.message || err?.response?.data?.error;
+      setError(
+        apiMessage || "Upload failed. Check your permissions and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -65,6 +115,7 @@ export default function Upload({ user }) {
               {title.length}/2200
             </div>
           </div>
+          {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
           <div className="mb-4">
             <label className="block mb-2 font-semibold">Aspect Ratio</label>
             <select
@@ -100,7 +151,11 @@ export default function Upload({ user }) {
                     <img
                       src={URL.createObjectURL(media)}
                       alt="Preview"
-                      className={aspectRatio === "reel" ? "w-full h-full" : "max-h-48 sm:max-h-64 max-w-full"}
+                      className={
+                        aspectRatio === "reel"
+                          ? "w-full h-full"
+                          : "max-h-48 sm:max-h-64 max-w-full"
+                      }
                     />
                     <div className="absolute top-2 right-2 bg-black bg-opacity-50 rounded-full p-1">
                       <FaImage className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
