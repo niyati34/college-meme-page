@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaImage, FaCloudUploadAlt } from "react-icons/fa";
-import { uploadMeme } from "../api";
+import { uploadMeme, uploadMemeFromUrl } from "../api";
 
 export default function Upload({ user }) {
   const [title, setTitle] = useState("");
@@ -25,11 +25,48 @@ export default function Upload({ user }) {
     }
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("aspectRatio", aspectRatio);
-      formData.append("media", media);
-      await uploadMeme(formData, user?.token);
+      // Try normal multipart upload first (small files)
+      try {
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("aspectRatio", aspectRatio);
+        formData.append("media", media);
+        await uploadMeme(formData, user?.token);
+      } catch (innerErr) {
+        // If payload too large (413), fallback to direct-to-Cloudinary then create-from-url
+        const status = innerErr?.response?.status;
+        if (status !== 413) throw innerErr;
+
+        // Require env for client-side upload
+        const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
+        if (!cloudName || !uploadPreset) {
+          throw { message: "Large file: missing Cloudinary env for client upload" };
+        }
+
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
+        const cloudForm = new FormData();
+        cloudForm.append("file", media);
+        cloudForm.append("upload_preset", uploadPreset);
+        const cloudRes = await fetch(cloudinaryUrl, { method: "POST", body: cloudForm });
+        if (!cloudRes.ok) {
+          const t = await cloudRes.text();
+          throw { message: `Cloudinary upload failed: ${t}` };
+        }
+        const cloudJson = await cloudRes.json();
+        const secureUrl = cloudJson.secure_url;
+        if (!secureUrl) throw { message: "Cloudinary upload response missing secure_url" };
+
+        await uploadMemeFromUrl(
+          {
+            title,
+            mediaUrl: secureUrl,
+            aspectRatio,
+            mediaType: media.type.startsWith("video/") ? "video" : "image",
+          },
+          user?.token
+        );
+      }
       setTitle("");
       setAspectRatio("normal");
       setMedia(null);
