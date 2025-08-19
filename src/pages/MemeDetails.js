@@ -375,7 +375,7 @@ export default function MemeDetails({ user }) {
 
           {/* Media */}
           <div
-            className="relative bg-black aspect-square cursor-pointer select-none"
+            className={`relative ${meme.aspectRatio === "reel" ? "reel-container" : "bg-black aspect-square"} cursor-pointer select-none`}
             onDoubleClick={handleDoubleClick}
             style={{ userSelect: "none", WebkitUserSelect: "none" }}
           >
@@ -384,13 +384,13 @@ export default function MemeDetails({ user }) {
                 src={meme.mediaUrl}
                 memeId={meme._id}
                 shouldPlay={true}
-                className="w-full h-full object-cover"
+                className="w-full h-full"
               />
             ) : (
               <img
                 src={meme.mediaUrl}
                 alt={meme.title || "Meme"}
-                className="w-full h-full object-cover"
+                className={`w-full h-full ${meme.aspectRatio === "reel" ? "" : "object-cover"}`}
                 draggable={false}
               />
             )}

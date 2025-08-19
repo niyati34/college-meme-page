@@ -224,7 +224,7 @@ export default function MemeCard({ meme, user, onVideoPlay, playingVideoId }) {
 
       {/* Media */}
       <div
-        className="relative bg-black aspect-square cursor-pointer select-none"
+        className={`relative ${meme.aspectRatio === "reel" ? "reel-container" : "bg-black aspect-square"} cursor-pointer select-none`}
         onDoubleClick={handleDoubleClick}
         style={{ userSelect: "none", WebkitUserSelect: "none" }}
       >
@@ -240,14 +240,14 @@ export default function MemeCard({ meme, user, onVideoPlay, playingVideoId }) {
             memeId={meme._id}
             shouldPlay={playingVideoId === meme._id}
             onPlay={() => onVideoPlay && onVideoPlay(meme._id)}
-            className="w-full h-full object-cover"
+            className="w-full h-full"
           />
         ) : (
           <img
             src={meme.mediaUrl}
             alt={meme.title || "Meme"}
             onLoad={handleImageLoad}
-            className={`w-full h-full object-cover transition-all duration-300 ${
+            className={`w-full h-full ${meme.aspectRatio === "reel" ? "" : "object-cover"} transition-all duration-300 ${
               imageLoaded ? "opacity-100" : "opacity-0"
             }`}
             draggable={false}
