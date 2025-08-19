@@ -3,6 +3,7 @@ const router = express.Router();
 
 const {
   createMeme,
+  createMemeFromUrl,
   getAllMemes,
   getMeme,
   deleteMeme,
@@ -10,7 +11,7 @@ const {
   incrementViews,
   getTrendingMemes,
   getMemesByCategory,
-  searchMemes
+  searchMemes,
 } = require("../controllers/memeController");
 
 const { verifyUser, verifyAdmin } = require("../middlewares/authMiddleware");
@@ -35,6 +36,14 @@ router.post(
   verifyAdmin,
   upload.single("media"),
   createMeme
+);
+
+// Alternative small JSON endpoint for pre-uploaded media URLs
+router.post(
+  "/create-from-url",
+  verifyUser,
+  verifyAdmin,
+  createMemeFromUrl
 );
 
 module.exports = router;
