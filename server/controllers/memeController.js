@@ -240,6 +240,7 @@ exports.getMeme = async (req, res) => {
       author: meme.author || { username: "Anonymous", avatarUrl: null },
       likes: meme.likes || [],
       views: meme.views || 0,
+      aspectRatio: meme.aspectRatio || "normal",
       createdAt: meme.createdAt,
       updatedAt: meme.updatedAt,
       comments: { length: commentCount },
@@ -285,6 +286,8 @@ exports.createMeme = async (req, res) => {
     console.log("Creating new meme with body:", req.body);
 
     const { title } = req.body;
+    const rawAspectRatio = (req.body.aspectRatio || "normal").toString().toLowerCase();
+    const aspectRatio = rawAspectRatio === "reel" ? "reel" : "normal";
     const file = req.file;
 
     if (!file) {
@@ -303,6 +306,7 @@ exports.createMeme = async (req, res) => {
       mediaType,
       author: req.user.id,
       likes: [],
+      aspectRatio,
     });
 
     console.log("Created meme object:", newMeme);

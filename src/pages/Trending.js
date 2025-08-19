@@ -103,11 +103,15 @@ function Trending() {
                 <div className="p-6">
                   <div className="flex flex-col lg:flex-row items-center lg:items-start space-y-6 lg:space-y-0 lg:space-x-8">
                     <div className="relative group cursor-pointer">
-                      <div className="w-64 h-64 lg:w-80 lg:h-80 rounded-xl overflow-hidden border border-gray-200">
+                      <div className={
+                        trendingMemes[0].aspectRatio === "reel"
+                          ? "reel-container w-64 lg:w-80 rounded-xl overflow-hidden border border-gray-200"
+                          : "w-64 h-64 lg:w-80 lg:h-80 rounded-xl overflow-hidden border border-gray-200"
+                      }>
                         {trendingMemes[0].mediaType === "video" ? (
                           <video
                             src={trendingMemes[0].mediaUrl}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full"
                             muted
                             loop
                           />
@@ -115,7 +119,7 @@ function Trending() {
                           <img
                             src={trendingMemes[0].mediaUrl}
                             alt={trendingMemes[0].title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full"
                           />
                         )}
                       </div>
@@ -167,11 +171,15 @@ function Trending() {
                 {trendingMemes.slice(1).map((meme, index) => (
                   <div key={meme._id} className="group cursor-pointer">
                     <div className="relative">
-                      <div className="w-full aspect-square rounded-lg overflow-hidden border border-gray-200">
+                      <div className={
+                        meme.aspectRatio === "reel"
+                          ? "reel-container rounded-lg overflow-hidden border border-gray-200"
+                          : "w-full aspect-square rounded-lg overflow-hidden border border-gray-200"
+                      }>
                         {meme.mediaType === "video" ? (
                           <video
                             src={meme.mediaUrl}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full"
                             muted
                             loop
                           />
@@ -179,7 +187,7 @@ function Trending() {
                           <img
                             src={meme.mediaUrl}
                             alt={meme.title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full"
                           />
                         )}
                       </div>
