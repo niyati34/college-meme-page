@@ -12,9 +12,7 @@ Share, discover, and trend the funniest campus memes — fast, minimal, and mobi
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow?labelColor=000)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?labelColor=000)
 
-<br/>
 
-<img alt="App preview" src="screenshots/home.png" width="100%" />
 
 </div>
 
@@ -47,8 +45,6 @@ Share, discover, and trend the funniest campus memes — fast, minimal, and mobi
 | Home Feed                     | Upload Meme                       |
 | ----------------------------- | --------------------------------- |
 | <img width="1917" height="871" alt="image" src="https://github.com/user-attachments/assets/09f4d3d3-a625-4350-a0e2-bf1c736ce452" />| <img width="1906" height="872" alt="image" src="https://github.com/user-attachments/assets/5ee81820-dea2-4b63-9663-d8feecf5e454" />|
-
-> Add your own screenshots to the `screenshots/` folder for more visual documentation.
 
 ## Live Demo
 
