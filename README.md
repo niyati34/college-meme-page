@@ -44,9 +44,9 @@ Share, discover, and trend the funniest campus memes — fast, minimal, and mobi
 
 ## Screenshots
 
-| Home Feed                     | Trending Page                         | Upload Meme                       |
-| ----------------------------- | ------------------------------------- | --------------------------------- |
-| ![Home](screenshots/home.png) | ![Trending](screenshots/trending.png) | ![Upload](screenshots/upload.png) |
+| Home Feed                     | Upload Meme                       |
+| ----------------------------- | --------------------------------- |
+| ![Home](screenshots/home.png) | ![Upload](screenshots/upload.png) |
 
 > Add your own screenshots to the `screenshots/` folder for more visual documentation.
 
@@ -117,7 +117,7 @@ flowchart LR
    A[React SPA] --Axios--> B[Express API]
    B --Mongoose--> C[(MongoDB)]
    B --SDK--> D[(Cloudinary)]
-   A <-Vercel Routes-> B
+   A <-->|Vercel Routes| B
 ```
 
 ## Roadmap
