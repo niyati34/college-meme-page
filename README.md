@@ -44,8 +44,8 @@ Share, discover, and trend the funniest campus memes — fast, minimal, and mobi
 
 ## Screenshots
 
-| Home Feed | Trending Page | Upload Meme |
-|-----------|---------------|-------------|
+| Home Feed                     | Trending Page                         | Upload Meme                       |
+| ----------------------------- | ------------------------------------- | --------------------------------- |
 | ![Home](screenshots/home.png) | ![Trending](screenshots/trending.png) | ![Upload](screenshots/upload.png) |
 
 > Add your own screenshots to the `screenshots/` folder for more visual documentation.
@@ -58,7 +58,7 @@ https://college-meme-page.vercel.app
 
 Prerequisites: Node 18+, MongoDB Atlas (or local), Cloudinary account.
 
-1) Clone and install
+1. Clone and install
 
 ```bash
 git clone https://github.com/niyati34/college-meme-page.git
@@ -67,11 +67,11 @@ npm install
 cd server && npm install && cd ..
 ```
 
-2) Configure environment variables
+2. Configure environment variables
 
 - Copy `server/.env.example` to `server/.env` and fill in your credentials.
 
-3) Run locally (frontend + backend)
+3. Run locally (frontend + backend)
 
 ```bash
 npm run dev
@@ -84,13 +84,13 @@ cd server && npm start
 
 Create `server/.env` with values like:
 
-| Variable | Description |
-|---------|-------------|
-| MONGO_URI | MongoDB connection string |
-| JWT_SECRET | Secret for signing JWTs |
+| Variable              | Description                |
+| --------------------- | -------------------------- |
+| MONGO_URI             | MongoDB connection string  |
+| JWT_SECRET            | Secret for signing JWTs    |
 | CLOUDINARY_CLOUD_NAME | Your Cloudinary cloud name |
-| CLOUDINARY_API_KEY | Cloudinary API key |
-| CLOUDINARY_API_SECRET | Cloudinary API secret |
+| CLOUDINARY_API_KEY    | Cloudinary API key         |
+| CLOUDINARY_API_SECRET | Cloudinary API secret      |
 
 ## Available Scripts
 
