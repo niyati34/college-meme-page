@@ -27,6 +27,36 @@ const storage = new CloudinaryStorage({
   },
 });
 
-const upload = multer({ storage });
+// Configure multer with file size limits
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit for images
+    files: 1, // Only allow 1 file
+  },
+  fileFilter: (req, file, cb) => {
+    // Check file type
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "video/mp4",
+      "video/mov",
+      "video/avi",
+      "video/mkv",
+      "video/webm",
+    ];
+
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(
+        new Error("Invalid file type. Only images and videos are allowed."),
+        false
+      );
+    }
+  },
+});
 
 module.exports = upload;

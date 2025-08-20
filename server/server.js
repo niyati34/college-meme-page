@@ -3,19 +3,52 @@ require("dotenv").config(); // Load environment variables locally
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const multer = require("multer");
 const authRoutes = require("./routes/authRoutes");
 const memeRoutes = require("./routes/memeRoutes");
 const commentRoutes = require("./routes/commentRoutes");
 const fixUsers = require("./fixUsers");
 
 const app = express();
+
+// Configure CORS
 app.use(cors());
-app.use(express.json());
+
+// Configure body parsing with size limits
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/memes", memeRoutes);
 app.use("/api/comments", commentRoutes);
+
+// Error handling middleware for multer errors
+app.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    if (error.code === "LIMIT_FILE_SIZE") {
+      return res.status(413).json({
+        error: "File too large. Maximum size is 10MB.",
+      });
+    }
+    if (error.code === "LIMIT_FILE_COUNT") {
+      return res.status(413).json({
+        error: "Too many files. Only 1 file allowed.",
+      });
+    }
+    return res.status(400).json({
+      error: "File upload error: " + error.message,
+    });
+  }
+
+  if (error.message.includes("Invalid file type")) {
+    return res.status(400).json({
+      error: error.message,
+    });
+  }
+
+  next(error);
+});
 
 // Mongoose connection cache to speed up serverless cold starts
 let cached = global.mongoose;

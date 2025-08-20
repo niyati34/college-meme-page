@@ -12,17 +12,75 @@ export default function Upload({ user }) {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // File size limit (10MB to match server config)
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+
+  const validateFile = (file) => {
+    if (!file) return "Please select a file.";
+
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+      return `File size must be less than ${(
+        MAX_FILE_SIZE /
+        (1024 * 1024)
+      ).toFixed(1)}MB. Your file is ${(file.size / (1024 * 1024)).toFixed(
+        1
+      )}MB.`;
+    }
+
+    // Check file type
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "video/mp4",
+      "video/mov",
+      "video/avi",
+      "video/mkv",
+      "video/webm",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      return "Invalid file type. Only images and videos are allowed.";
+    }
+
+    return null; // No error
+  };
+
+  const handleFileSelect = (file) => {
+    const validationError = validateFile(file);
+    if (validationError) {
+      setError(validationError);
+      return false;
+    }
+
+    setMedia(file);
+    setError(""); // Clear any previous errors
+    return true;
+  };
+
   const handleUpload = async (e) => {
     e.preventDefault();
     setError("");
+
     if (!user || user.role !== "admin") {
       setError("Only admins can upload. Please login as admin.");
       return;
     }
+
     if (!media || !title) {
       setError("Please add a caption and select a file.");
       return;
     }
+
+    // Final validation before upload
+    const validationError = validateFile(media);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setLoading(true);
     try {
       // Try normal multipart upload first (small files)
@@ -41,21 +99,27 @@ export default function Upload({ user }) {
         const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
         const uploadPreset = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
         if (!cloudName || !uploadPreset) {
-          throw { message: "Large file: missing Cloudinary env for client upload" };
+          throw {
+            message: "Large file: missing Cloudinary env for client upload",
+          };
         }
 
         const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
         const cloudForm = new FormData();
         cloudForm.append("file", media);
         cloudForm.append("upload_preset", uploadPreset);
-        const cloudRes = await fetch(cloudinaryUrl, { method: "POST", body: cloudForm });
+        const cloudRes = await fetch(cloudinaryUrl, {
+          method: "POST",
+          body: cloudForm,
+        });
         if (!cloudRes.ok) {
           const t = await cloudRes.text();
           throw { message: `Cloudinary upload failed: ${t}` };
         }
         const cloudJson = await cloudRes.json();
         const secureUrl = cloudJson.secure_url;
-        if (!secureUrl) throw { message: "Cloudinary upload response missing secure_url" };
+        if (!secureUrl)
+          throw { message: "Cloudinary upload response missing secure_url" };
 
         await uploadMemeFromUrl(
           {
@@ -86,15 +150,17 @@ export default function Upload({ user }) {
     e.preventDefault();
     setIsDragOver(true);
   };
+
   const handleDragLeave = (e) => {
     e.preventDefault();
     setIsDragOver(false);
   };
+
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragOver(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setMedia(e.dataTransfer.files[0]);
+      handleFileSelect(e.dataTransfer.files[0]);
     }
   };
 
@@ -188,10 +254,13 @@ export default function Upload({ user }) {
                   <p className="text-sm text-gray-500 mt-1">
                     or click to select files
                   </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Maximum file size: 10MB
+                  </p>
                 </div>
                 <input
                   type="file"
-                  onChange={(e) => setMedia(e.target.files[0])}
+                  onChange={(e) => handleFileSelect(e.target.files[0])}
                   accept="image/*,video/*"
                   className="hidden"
                   id="file-upload"
